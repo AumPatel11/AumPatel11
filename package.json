@@ -1,0 +1,22 @@
+{
+  "name": "uipro",
+  "version": "0.1.0",
+  "description": "Install the UI Pro skill pack into Claude Code, Cursor, or any agent that reads ~/.agents/skills.",
+  "type": "module",
+  "bin": {
+    "uipro": "bin/uipro.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "skills",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=18.17"
+  },
+  "license": "MIT"
+}
