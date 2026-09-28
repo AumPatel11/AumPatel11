@@ -41,6 +41,7 @@ Run `uipro list` to see what is in the pack.
 - **ui-components** - building and refactoring interface components against an existing codebase.
 - **ui-accessibility** - auditing and fixing keyboard, semantics, naming, and contrast problems.
 - **ui-design-review** - critiquing a screen and returning ranked, specific fixes.
+- **scroll-craft** - premium scroll-driven landing pages with layered heroes, verified by screenshots. By Nate Herk, MIT licensed.
 - **web-motion-3d** - scroll animation, interactive 3D (Three.js/GSAP), and stitch-style effects for showcase sites such as an embroidery business.
 
 ## Development
