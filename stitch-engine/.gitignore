@@ -1,0 +1,5 @@
+.venv/
+__pycache__/
+.pytest_cache/
+# Files written by scripts/test_sheet.py and scripts/render.py
+out/

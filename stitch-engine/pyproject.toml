@@ -1,0 +1,6 @@
+# Only tool settings live here; dependencies are in requirements.txt.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Lets the tests `import engine` and `import api` without installing anything.
+pythonpath = ["."]
