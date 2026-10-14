@@ -69,7 +69,7 @@ def sequence(blocks: list[Block]) -> list[Command]:
 
         thread = run[0].thread_id
         commands.append(Command(Cmd.JUMP, *points[0]))
-        for (x, y), owner in zip(points, owners):
+        for (x, y), owner in zip(points, owners, strict=True):
             commands.append(Command(Cmd.STITCH, float(x), float(y), owner, thread))
         position = (float(points[-1][0]), float(points[-1][1]))
 

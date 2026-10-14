@@ -1,4 +1,6 @@
 import io
+import json
+from pathlib import Path
 
 import pyembroidery
 import pytest
@@ -65,3 +67,12 @@ def test_preview_returns_png():
     assert res.status_code == 200
     assert res.headers["content-type"] == "image/png"
     assert res.content.startswith(b"\x89PNG")
+
+
+def test_example_design_file_exports():
+    example = json.loads((Path(__file__).parent.parent / "examples" / "cafe_logo.json").read_text())
+    stitched = client.post("/stitches", json=example).json()
+    assert stitched["objects"][0]["type"] == "satin"
+    res = client.post("/export?format=dst", json=example)
+    pattern = pyembroidery.read_dst(io.BytesIO(res.content))
+    assert pattern.count_stitch_commands(pyembroidery.STITCH) == stitched["stitchCount"]

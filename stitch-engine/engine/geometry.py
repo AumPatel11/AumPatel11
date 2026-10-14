@@ -47,16 +47,24 @@ def path_length(pts: Points) -> float:
     return float(cumulative_lengths(pts)[-1]) if len(pts) >= 2 else 0.0
 
 
-def points_at(pts: Points, distances) -> Points:
-    """Points at the given distances along the path (clamped to its ends)."""
-    distances = np.atleast_1d(np.asarray(distances, dtype=float))
-    if len(pts) < 2:
-        return np.repeat(pts[:1], len(distances), axis=0)
+def locate(pts: Points, distances) -> tuple[np.ndarray, np.ndarray]:
+    """For each distance along the path, which segment it falls in and how far along it.
+
+    Returns (seg, t): distance d lies on segment pts[seg] -> pts[seg + 1],
+    a fraction t (0..1) of the way along. Distances are clamped to the path.
+    """
     cum = cumulative_lengths(pts)
-    d = np.clip(distances, 0.0, cum[-1])
-    # Index of the segment each distance falls in.
+    d = np.clip(np.atleast_1d(np.asarray(distances, dtype=float)), 0.0, cum[-1])
     seg = np.clip(np.searchsorted(cum, d, side="right") - 1, 0, len(pts) - 2)
     t = (d - cum[seg]) / (cum[seg + 1] - cum[seg])
+    return seg, t
+
+
+def points_at(pts: Points, distances) -> Points:
+    """Points at the given distances along the path (clamped to its ends)."""
+    if len(pts) < 2:
+        return np.repeat(pts[:1], len(np.atleast_1d(distances)), axis=0)
+    seg, t = locate(pts, distances)
     return pts[seg] + (pts[seg + 1] - pts[seg]) * t[:, None]
 
 

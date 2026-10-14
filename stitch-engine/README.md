@@ -19,7 +19,7 @@ pip install -r requirements.txt
 ```sh
 uvicorn api.main:app --reload     # API on http://127.0.0.1:8000, docs at /docs
 pytest                            # unit tests
-python scripts/render.py my_design.json   # out/my_design.{png,dst,pes}
+python scripts/render.py examples/cafe_logo.json   # out/cafe_logo.{png,dst,pes}
 ```
 
 ## Coordinates
@@ -80,6 +80,25 @@ thickness. Add `?points=true` to mark every needle point.
 Sharp corners (over 30°) always get a needle point, so corners stay crisp.
 `"closed": true` sews back to the first point.
 
+### `satin`
+
+The path is the **centre line** of the column.
+
+| prop        | default  | meaning                                                   |
+| ----------- | -------- | --------------------------------------------------------- |
+| `widthMm`   | 3.0      | column width (0.2 mm pull compensation is added on top)   |
+| `densityMm` | 0.4      | gap between needle points on the same side (peak to peak) |
+| `underlay`  | `"auto"` | `"auto"`, `"center"`, `"edge"` or `"none"`                |
+
+- `"auto"` underlay: a centre run below 2 mm wide, otherwise an edge run
+  (0.4 mm inside each edge) plus a light zigzag (2 mm peak to peak).
+  An explicit value always wins.
+- The underlay is sewn from the start of the path to the end and the satin
+  comes back over it, so a satin finishes where it started.
+- Corners are mitred so the column keeps its width, capped at 1.5x so very
+  sharp corners don't spike.
+- `"closed": true` makes a ring.
+
 ## What the sequencer adds
 
 Applied to every design in `engine/sequence.py`:
@@ -98,6 +117,7 @@ engine/
   design.py     the design JSON contract (Pydantic models)
   geometry.py   small polyline helpers shared by all stitch types
   running.py    running and bean stitch
+  satin.py      satin columns and their underlay
   sequence.py   tie-in/off, trims, colour changes, short-stitch removal
   plan.py       design -> per-object stitches -> machine commands
   export.py     DST / PES via pyembroidery

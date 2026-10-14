@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "name": "Cafe logo",
+  "hoop": { "widthMm": 150, "heightMm": 150 },
+  "backdrop": { "uri": "backdrop.png", "xMm": 0, "yMm": 0, "scale": 1, "rotation": 0, "opacity": 0.4, "locked": true, "visible": true },
+  "threads": [ { "id": "t1", "name": "Black", "hex": "#000000" } ],
+  "objects": [
+    {
+      "id": "o1",
+      "type": "satin",
+      "threadId": "t1",
+      "path": [[-20, 10], [0, 25], [20, 10]],
+      "closed": false,
+      "props": { "widthMm": 2.5, "densityMm": 0.4, "underlay": "center" },
+      "locked": false,
+      "visible": true
+    }
+  ]
+}

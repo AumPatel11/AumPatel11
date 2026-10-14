@@ -68,10 +68,28 @@ class RunningObject(BaseObject):
     props: RunningProps = Field(default_factory=RunningProps)
 
 
+# --- Satin ----------------------------------------------------------------
+
+
+class SatinProps(BaseModel):
+    widthMm: float = Field(3.0, ge=0.5, le=10)
+    # Distance between neighbouring needle points on the same side.
+    densityMm: float = Field(0.4, ge=0.1, le=5)
+    # "auto" = centre run under 2 mm wide, otherwise edge run + light zigzag.
+    underlay: Literal["auto", "center", "edge", "none"] = "auto"
+
+
+class SatinObject(BaseObject):
+    """The path is the centre line of the satin column."""
+
+    type: Literal["satin"]
+    props: SatinProps = Field(default_factory=SatinProps)
+
+
 # --- The whole design -----------------------------------------------------
 
 # Pydantic picks the right object class by looking at the "type" field.
-DesignObject = Annotated[Union[RunningObject], Field(discriminator="type")]
+DesignObject = Annotated[Union[RunningObject, SatinObject], Field(discriminator="type")]
 
 
 class Design(BaseModel):
