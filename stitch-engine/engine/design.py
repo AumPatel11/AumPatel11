@@ -86,10 +86,31 @@ class SatinObject(BaseObject):
     props: SatinProps = Field(default_factory=SatinProps)
 
 
+# --- Tatami fill ----------------------------------------------------------
+
+
+class FillProps(BaseModel):
+    # Row direction, counter-clockwise on screen: 0 = horizontal, 45 = "/".
+    angleDeg: float = 45.0
+    # Distance between rows.
+    densityMm: float = Field(0.4, ge=0.1, le=5)
+    stitchLengthMm: float = Field(4.0, ge=1, le=12)
+    # Rows at 90 degrees, 2 mm apart, sewn before the fill.
+    underlay: bool = True
+
+
+class FillObject(BaseObject):
+    """The path is the outline of the shape; it is always treated as closed."""
+
+    type: Literal["fill"]
+    path: list[Point] = Field(min_length=3)
+    props: FillProps = Field(default_factory=FillProps)
+
+
 # --- The whole design -----------------------------------------------------
 
 # Pydantic picks the right object class by looking at the "type" field.
-DesignObject = Annotated[Union[RunningObject, SatinObject], Field(discriminator="type")]
+DesignObject = Annotated[Union[RunningObject, SatinObject, FillObject], Field(discriminator="type")]
 
 
 class Design(BaseModel):

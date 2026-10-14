@@ -37,9 +37,7 @@ ZIGZAG_UNDERLAY_SPACING_MM = 2.0  # peak to peak; "light" compared to ~0.4 on to
 MITER_LIMIT = 1.5
 
 
-def satin_stitches(
-    path, width: float, density: float = 0.4, underlay: str = "auto", closed: bool = False
-) -> Points:
+def satin_stitches(path, width: float, density: float = 0.4, underlay: str = "auto", closed: bool = False) -> Points:
     """Needle points for a satin column: underlay first, then the satin on top."""
     centre = as_points(path)
     if closed:

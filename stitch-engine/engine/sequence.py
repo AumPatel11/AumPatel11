@@ -17,7 +17,7 @@ from enum import Enum
 
 import numpy as np
 
-from .geometry import Points, cumulative_lengths, distance, point_along
+from .geometry import Points, distance, point_along
 
 TIE_STITCH_MM = 0.8
 TRIM_GAP_MM = 3.0
@@ -119,17 +119,12 @@ def _sew_run(run: list[Block]) -> tuple[Points, list[str]]:
 def _add_tie_in(points: Points, owners: list[str]) -> tuple[Points, list[str]]:
     """Start with 3 short stitches: P0 -> A -> P0 -> A, A being 0.8 mm along the path.
 
-    Sewing then carries on from the first original point past A.
+    Sewing then carries on with the original points; any that land too
+    close to A are removed by drop_short_stitches afterwards.
     """
     a = point_along(points, TIE_STITCH_MM)
     tie = np.array([points[0], a, points[0], a])
-    # Skip original points the tie stitches already covered.
-    rest = np.nonzero(cumulative_lengths(points) > TIE_STITCH_MM + 1e-9)[0]
-    first = int(rest[0]) if len(rest) else len(points)
-    return (
-        np.vstack([tie, points[first:]]),
-        [owners[0]] * len(tie) + owners[first:],
-    )
+    return np.vstack([tie, points[1:]]), [owners[0]] * len(tie) + owners[1:]
 
 
 def _add_tie_off(points: Points, owners: list[str]) -> tuple[Points, list[str]]:

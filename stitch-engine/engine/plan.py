@@ -8,7 +8,8 @@
 
 from dataclasses import dataclass
 
-from .design import Design, RunningObject, SatinObject
+from .design import Design, FillObject, RunningObject, SatinObject
+from .fill import fill_stitches
 from .geometry import as_points
 from .running import running_stitch
 from .satin import satin_stitches
@@ -23,6 +24,9 @@ def object_blocks(obj) -> list[Block]:
     elif isinstance(obj, SatinObject):
         p = obj.props
         runs = [satin_stitches(obj.path, p.widthMm, p.densityMm, p.underlay, obj.closed)]
+    elif isinstance(obj, FillObject):
+        p = obj.props
+        runs = fill_stitches(obj.path, p.angleDeg, p.densityMm, p.stitchLengthMm, p.underlay)
     else:
         raise ValueError(f"unsupported object type {obj.type!r}")
     return [Block(obj.id, obj.threadId, as_points(r)) for r in runs if len(r) > 0]

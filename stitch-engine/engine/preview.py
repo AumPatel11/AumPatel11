@@ -1,6 +1,6 @@
 """Render a StitchPlan to a PNG so output can be checked without a machine.
 
-Stitches are drawn at true thread thickness (about 0.35 mm), so satin and
+Stitches are drawn at true thread thickness (about 0.4 mm), so satin and
 fill look solid when the density is right and stripy when it is too open.
 Jumps show as dotted grey lines. The y axis points down, as in the editor.
 """
@@ -14,7 +14,7 @@ from matplotlib.patches import Rectangle
 from .plan import StitchPlan
 from .sequence import Cmd
 
-THREAD_WIDTH_MM = 0.35
+THREAD_WIDTH_MM = 0.4  # sewn 40wt thread flattens to about this
 FABRIC_COLOR = "#ebe7de"
 MARGIN_MM = 5.0
 HEADER_IN = 0.45  # space above the drawing for the title line
@@ -58,11 +58,11 @@ def render_png(plan: StitchPlan, path: str | None = None, *, show_points: bool =
     ax.plot([-2, 2], [0, 0], color="#9a958a", linewidth=0.6)
     ax.plot([0, 0], [-2, 2], color="#9a958a", linewidth=0.6)
 
-    segments, colors, jumps = _segments(plan)
+    stitches, colors, jumps = _segments(plan)
     points_per_mm = width_in * 72 / view_w
     ax.add_collection(
         LineCollection(
-            segments,
+            stitches,
             colors=colors,
             linewidths=THREAD_WIDTH_MM * points_per_mm,
             capstyle="round",
@@ -97,22 +97,21 @@ def render_png(plan: StitchPlan, path: str | None = None, *, show_points: bool =
 
 
 def _segments(plan: StitchPlan):
-    """Split the command list into sewn polylines (with colours) and jump lines."""
-    segments, colors, jumps = [], [], []
-    current = None
+    """Every sewn stitch as its own line (with its colour), plus the jump lines.
+
+    Each stitch is drawn separately rather than as one long polyline:
+    matplotlib fills a thick polyline as a single outline, and where fill
+    rows double back over each other parts of that outline cancel out and
+    leave unpainted gaps.
+    """
+    stitches, colors, jumps = [], [], []
     position = (0.0, 0.0)
     for c in plan.commands:
         if c.cmd == Cmd.STITCH:
-            if current is None:
-                current = [position]
-                segments.append(current)
-                colors.append(plan.design.thread(c.thread_id).hex)
-            current.append((c.x, c.y))
+            stitches.append((position, (c.x, c.y)))
+            colors.append(plan.design.thread(c.thread_id).hex)
             position = (c.x, c.y)
         elif c.cmd == Cmd.JUMP:
-            jumps.append([position, (c.x, c.y)])
+            jumps.append((position, (c.x, c.y)))
             position = (c.x, c.y)
-            current = None
-        else:
-            current = None
-    return segments, colors, jumps
+    return stitches, colors, jumps
