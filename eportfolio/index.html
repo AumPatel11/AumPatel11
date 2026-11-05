@@ -1,0 +1,853 @@
+<!doctype html>
+<html lang="en-NZ">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aum Patel ePortfolio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="ePortfolio of Aum Patel, business student at ICL Graduate Business School in Auckland: biography, project work, professional development plan, CV and reflective journal.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Martian+Mono:wdth,wght@75..112.5,300..600&family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&display=swap">
+<link rel="stylesheet" href="assets/css/styles.css">
+<script>
+  (function () {
+    var d = document.documentElement;
+    d.classList.add('js');
+    try { var t = localStorage.getItem('ap-theme'); if (t === 'light' || t === 'dark') d.setAttribute('data-theme', t); } catch (e) {}
+  })();
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- ============================ HEADER ============================ -->
+<header class="site-header" data-header>
+  <div class="bar">
+    <a class="brand" href="#top" aria-label="Aum Patel, back to top">
+      <span class="brand__mark" aria-hidden="true">AP</span>
+      <span class="brand__name">Aum Patel</span>
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <ul>
+        <li><a href="#biography" data-nav>Biography</a></li>
+        <li><a href="#project" data-nav>Project work</a></li>
+        <li><a href="#development" data-nav>Development</a></li>
+        <li><a href="#reflections" data-nav>Reflections</a></li>
+        <li><a href="#contact" data-nav>Contact</a></li>
+      </ul>
+    </nav>
+    <div class="bar__actions">
+      <button class="icon-btn theme-toggle" type="button" aria-label="Switch colour theme">
+        <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.6A8.2 8.2 0 0 1 9.4 4a8.2 8.2 0 1 0 10.6 10.6Z"/></svg>
+        <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>
+      </button>
+      <a class="btn btn--route btn--sm bar__cv" href="#cv">View CV</a>
+      <button class="icon-btn menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">
+        <span class="menu-toggle__lines" aria-hidden="true"><span></span><span></span></span>
+      </button>
+    </div>
+  </div>
+  <div class="progress" aria-hidden="true"><span></span></div>
+</header>
+
+<div class="mobile-menu" id="mobile-menu" hidden>
+  <nav aria-label="Sections">
+    <ol>
+      <li><a href="#biography"><span>01</span>Biography</a></li>
+      <li><a href="#project"><span>02</span>Project work</a></li>
+      <li><a href="#development"><span>03</span>Professional development</a></li>
+      <li><a href="#reflections"><span>04</span>Reflective learning</a></li>
+      <li><a href="#contact"><span>05</span>Contact</a></li>
+      <li><a href="#cv"><span>CV</span>Curriculum vitae</a></li>
+    </ol>
+  </nav>
+  <p class="mobile-menu__foot">Tāmaki Makaurau Auckland · <span data-nz-time>--:--</span></p>
+</div>
+
+<main id="main">
+
+<!-- ============================ HERO ============================ -->
+<section class="hero" id="top" aria-labelledby="hero-title">
+  <div class="hero__map" aria-hidden="true">
+    <canvas id="hero-canvas" class="hero__canvas"></canvas>
+    <div class="hero__labels" id="hero-labels"></div>
+  </div>
+
+  <div class="wrap hero__inner">
+    <div class="hero__copy">
+      <p class="eyebrow hero__eyebrow intro-anim" style="--d:.05"><span class="status-dot" aria-hidden="true"></span>ePortfolio · ICL Graduate Business School</p>
+      <h1 class="hero__title" id="hero-title">
+        <span class="line"><span>Aum</span></span>
+        <span class="line line--indent"><span><span class="here" aria-hidden="true"></span>Patel</span></span>
+      </h1>
+      <p class="hero__lede intro-anim" style="--d:.35">Business professional in training, based in Tāmaki Makaurau Auckland. I'm completing my <span class="ph">[MM / MBI / PGDM / PGDBI]</span> at ICL Graduate Business School and building a career in <span class="ph">[your target field]</span>.</p>
+      <div class="hero__cta intro-anim" style="--d:.5">
+        <a class="btn btn--route" href="#project">See my project work <span class="arrow" aria-hidden="true">→</span></a>
+        <a class="btn btn--ghost" href="#cv">Read my CV</a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="wrap hero__foot intro-anim" style="--d:.8">
+    <div class="mapbar">
+      <div class="legend">
+        <p class="legend__title">Legend</p>
+        <ul class="legend__items">
+          <li><span class="sym sym--route" aria-hidden="true"></span>Career route</li>
+          <li><span class="sym sym--wp" aria-hidden="true"></span>Waypoint</li>
+          <li><span class="sym sym--spot" aria-hidden="true"></span>Spot height (m)</li>
+          <li><span class="sym sym--water" aria-hidden="true"></span>Water</li>
+        </ul>
+      </div>
+      <dl class="readout" aria-label="Map readout">
+        <div class="readout__place"><dt>Place</dt><dd id="hud-place">Tāmaki Makaurau Auckland</dd></div>
+        <div><dt>Position</dt><dd id="hud-coords">36.8485° S  174.7633° E</dd></div>
+        <div><dt>Elevation</dt><dd id="hud-elev">—</dd></div>
+        <div><dt>Local time</dt><dd data-nz-time>--:--</dd></div>
+      </dl>
+    </div>
+    <p class="mapbar__note">Stylised Auckland volcanic field · contour interval 20 m · point at the map for a reading</p>
+  </div>
+</section>
+
+<!-- ============================ 01 BIOGRAPHY ============================ -->
+<section class="section" id="biography" aria-labelledby="bio-title">
+  <div class="wrap">
+    <header class="section-head" data-reveal>
+      <p class="section-head__index"><span>01</span>Biography</p>
+      <h2 class="section-head__title" id="bio-title">Who I am</h2>
+      <p class="section-head__lede">Where I am now, where I'm heading, and an honest look at my strengths and the areas I'm working on.</p>
+    </header>
+
+    <div class="stack">
+      <!-- Personal introduction -->
+      <div class="intro" id="introduction">
+        <figure class="portrait" data-tilt data-reveal>
+          <div class="portrait__frame">
+            <!-- Replace this placeholder with your photo:
+                 <img src="assets/img/aum-patel.jpg" alt="Aum Patel" width="800" height="1000"> -->
+            <canvas class="portrait__terrain" data-contours="portrait" aria-hidden="true"></canvas>
+            <div class="portrait__placeholder">
+              <span class="portrait__initials">AP</span>
+              <span class="portrait__hint">Add a professional photo</span>
+            </div>
+          </div>
+          <figcaption><span>Aum Patel</span><span>Auckland, New Zealand</span></figcaption>
+        </figure>
+
+        <div class="intro__text">
+          <h3 class="sub-title" data-reveal>Personal introduction</h3>
+          <p class="lead" data-reveal>Kia ora, I'm Aum Patel. I'm a <span class="ph">[current role or status, e.g., full-time postgraduate student]</span> studying the <span class="ph">[MM / MBI / PGDM / PGDBI]</span> at ICL Graduate Business School in Auckland.</p>
+          <p data-reveal><span class="ph">[Two or three sentences on your background: the industry you've worked in, your role, years of experience and where. What do you enjoy most about your work, and what kind of problems do you like solving?]</span></p>
+          <dl class="facts" data-reveal-group>
+            <div><dt>Current status</dt><dd><span class="ph">[e.g., Student, ICL Graduate Business School]</span></dd></div>
+            <div><dt>Background</dt><dd><span class="ph">[e.g., 3 years in retail operations]</span></dd></div>
+            <div><dt>Focus areas</dt><dd><span class="ph">[e.g., Operations, analytics, leadership]</span></dd></div>
+            <div><dt>Languages</dt><dd><span class="ph">[e.g., English, Hindi, Gujarati]</span></dd></div>
+          </dl>
+        </div>
+      </div>
+
+      <!-- Career aspirations -->
+      <div class="aspire" id="aspirations">
+        <canvas class="aspire__map" data-contours="aspire" data-parallax aria-hidden="true"></canvas>
+        <div class="aspire__inner">
+          <div class="aspire__head" data-reveal>
+            <h3 class="sub-title">Career aspirations</h3>
+            <p class="statement">My purpose is to <span class="ph">[the difference you want to make, e.g., help organisations run leaner, fairer operations]</span>. Completing my <span class="ph">[qualification]</span> at ICL is the step that gets me there.</p>
+          </div>
+          <ol class="route-steps" data-reveal-group>
+            <li>
+              <span class="route-steps__when">Now</span>
+              <h4><span class="ph">[Current position]</span></h4>
+              <p><span class="ph">[What you're doing today and the skills you're building.]</span></p>
+            </li>
+            <li>
+              <span class="route-steps__when"><span class="ph">[2026–27]</span></span>
+              <h4>Graduate from ICL</h4>
+              <p><span class="ph">[What you'll leave with: the qualification, a network, New Zealand experience.]</span></p>
+            </li>
+            <li>
+              <span class="route-steps__when">Within 2 years</span>
+              <h4><span class="ph">[Target role, e.g., Operations Analyst]</span></h4>
+              <p><span class="ph">[The type of organisation or industry you want to join in New Zealand.]</span></p>
+            </li>
+            <li>
+              <span class="route-steps__when">5 years +</span>
+              <h4><span class="ph">[Long-term goal, e.g., Operations Manager]</span></h4>
+              <p><span class="ph">[The kind of leader you want to become.]</span></p>
+            </li>
+            <li class="route-steps__line" aria-hidden="true"></li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- Self-evaluation -->
+      <div class="selfeval" id="self-evaluation">
+        <div class="selfeval__head" data-reveal>
+          <h3 class="sub-title">Self-evaluation</h3>
+          <p>I completed the self-assessment instruments in Chapter 1, "Developing Self-Awareness", of Whetten and Cameron's <cite>Developing Management Skills</cite>. Here is what each one told me about how I think, decide and work with others.</p>
+        </div>
+
+        <div class="ledger" role="table" aria-label="Self-awareness assessment results">
+          <div class="ledger__head" role="row">
+            <span role="columnheader">Area of self-awareness</span>
+            <span role="columnheader">Instrument</span>
+            <span role="columnheader">My result</span>
+            <span role="columnheader">What it tells me</span>
+          </div>
+          <div class="ledger__rows" role="rowgroup" data-reveal-group>
+            <div class="ledger__row" role="row">
+              <h4 class="ledger__area" role="cell">Emotional intelligence</h4>
+              <p role="cell"><span class="ledger__label">Instrument</span>Emotional Intelligence Assessment</p>
+              <p class="ledger__score" role="cell"><span class="ledger__label">My result</span><span class="ph">[score]</span></p>
+              <p role="cell"><span class="ledger__label">What it tells me</span><span class="ph">[e.g., I read other people's emotions well but can be slow to manage my own under deadline pressure.]</span></p>
+            </div>
+            <div class="ledger__row" role="row">
+              <h4 class="ledger__area" role="cell">Values and ethical maturity</h4>
+              <p role="cell"><span class="ledger__label">Instrument</span>Defining Issues Test</p>
+              <p class="ledger__score" role="cell"><span class="ledger__label">My result</span><span class="ph">[score / stage]</span></p>
+              <p role="cell"><span class="ledger__label">What it tells me</span><span class="ph">[What your dominant values are and how they guide your decisions.]</span></p>
+            </div>
+            <div class="ledger__row" role="row">
+              <h4 class="ledger__area" role="cell">Cognitive style</h4>
+              <p role="cell"><span class="ledger__label">Instrument</span>Cognitive Style Indicator</p>
+              <p class="ledger__score" role="cell"><span class="ledger__label">My result</span><span class="ph">[knowing / planning / creating]</span></p>
+              <p role="cell"><span class="ledger__label">What it tells me</span><span class="ph">[How you prefer to gather and evaluate information.]</span></p>
+            </div>
+            <div class="ledger__row" role="row">
+              <h4 class="ledger__area" role="cell">Attitude toward change</h4>
+              <p role="cell"><span class="ledger__label">Instrument</span>Locus of Control and Tolerance of Ambiguity scales</p>
+              <p class="ledger__score" role="cell"><span class="ledger__label">My result</span><span class="ph">[scores]</span></p>
+              <p role="cell"><span class="ledger__label">What it tells me</span><span class="ph">[How comfortable you are with uncertainty, and how much control you feel over outcomes.]</span></p>
+            </div>
+            <div class="ledger__row" role="row">
+              <h4 class="ledger__area" role="cell">Core self-evaluation</h4>
+              <p role="cell"><span class="ledger__label">Instrument</span>Core Self-Evaluation Scale</p>
+              <p class="ledger__score" role="cell"><span class="ledger__label">My result</span><span class="ph">[score]</span></p>
+              <p role="cell"><span class="ledger__label">What it tells me</span><span class="ph">[Your self-esteem, self-efficacy and emotional stability, and what they mean at work.]</span></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="sw" data-reveal-group>
+          <div class="sw__col">
+            <h4 class="sw__title"><span class="sym sym--spot" aria-hidden="true"></span>Strengths</h4>
+            <ul class="sw__list">
+              <li><strong><span class="ph">[Strength 1, e.g., Analytical thinking]</span></strong><span><span class="ph">[Evidence: an assessment result or a real example.]</span></span></li>
+              <li><strong><span class="ph">[Strength 2, e.g., Building rapport]</span></strong><span><span class="ph">[Evidence.]</span></span></li>
+              <li><strong><span class="ph">[Strength 3, e.g., Reliability under pressure]</span></strong><span><span class="ph">[Evidence.]</span></span></li>
+            </ul>
+          </div>
+          <div class="sw__col">
+            <h4 class="sw__title"><span class="sym sym--open" aria-hidden="true"></span>Areas for development</h4>
+            <ul class="sw__list">
+              <li><strong><span class="ph">[Area 1, e.g., Tolerance of ambiguity]</span></strong><span><span class="ph">[What you'll do about it. Link it to a learning goal below.]</span></span></li>
+              <li><strong><span class="ph">[Area 2, e.g., Delegating tasks]</span></strong><span><span class="ph">[Action.]</span></span></li>
+              <li><strong><span class="ph">[Area 3, e.g., Public speaking]</span></strong><span><span class="ph">[Action.]</span></span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- LinkedIn -->
+      <div class="linkedin" id="linkedin">
+        <div class="li-card" data-tilt data-reveal>
+          <div class="li-card__banner">
+            <canvas data-contours="banner" data-tone="inv" aria-hidden="true"></canvas>
+          </div>
+          <div class="li-card__avatar" aria-hidden="true">AP</div>
+          <div class="li-card__body">
+            <p class="li-card__name">Aum Patel</p>
+            <p class="li-card__headline"><span class="ph">[Your LinkedIn headline, e.g., MM student · Operations &amp; analytics · Auckland]</span></p>
+            <p class="li-card__meta">Auckland, New Zealand · ICL Graduate Business School</p>
+            <a class="btn btn--route" href="https://www.linkedin.com/in/your-profile" target="_blank" rel="noopener">View my LinkedIn profile <span class="arrow" aria-hidden="true">↗</span></a>
+          </div>
+        </div>
+        <div class="linkedin__text" data-reveal>
+          <h3 class="sub-title">LinkedIn</h3>
+          <p>My LinkedIn profile is the fullest record of my professional life. Connect with me there to follow my progress.</p>
+          <ul class="checklist">
+            <li>Profile summary</li>
+            <li>Education and qualifications</li>
+            <li>Work experience</li>
+            <li>Skills and endorsements</li>
+            <li>Professional photo</li>
+          </ul>
+          <p class="muted">Prefer email? My contact details and a message form are in the <a href="#contact">contact section</a>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 02 PROJECT WORK ============================ -->
+<section class="section section--sunk" id="project" aria-labelledby="project-title">
+  <div class="wrap">
+    <header class="section-head" data-reveal>
+      <p class="section-head__index"><span>02</span>Project work</p>
+      <h2 class="section-head__title" id="project-title">Featured project</h2>
+      <p class="section-head__lede">A piece of work I'm proud of, explained for someone who wasn't in the room: the challenge, my part in it, and what came of it.</p>
+    </header>
+
+    <article class="case" aria-labelledby="case-title">
+      <div class="case__cover" data-tilt data-reveal>
+        <canvas data-contours="cover" data-tone="inv" aria-hidden="true"></canvas>
+        <div class="case__cover-text">
+          <p class="case__course"><span class="ph">[Course code]</span> · <span class="ph">[Course name]</span></p>
+          <h3 class="case__title" id="case-title"><span class="ph">[Project title, e.g., Cutting stock-outs for a regional grocer]</span></h3>
+          <p class="case__summary"><span class="ph">[One sentence on what the project achieved.]</span></p>
+        </div>
+      </div>
+
+      <dl class="case__meta" data-reveal-group>
+        <div><dt>Course</dt><dd><span class="ph">[Course name]</span></dd></div>
+        <div><dt>My role</dt><dd><span class="ph">[e.g., Team lead, analyst]</span></dd></div>
+        <div><dt>Team</dt><dd><span class="ph">[e.g., Group of 4]</span></dd></div>
+        <div><dt>Timeframe</dt><dd><span class="ph">[e.g., 8 weeks, Term 2 2026]</span></dd></div>
+        <div><dt>Tools</dt><dd><span class="ph">[e.g., Excel, Power BI, Miro]</span></dd></div>
+      </dl>
+
+      <div class="case__body">
+        <nav class="case__nav" aria-label="Project steps">
+          <span class="marker" aria-hidden="true"></span>
+          <ol>
+            <li><a href="#case-context"><span>01</span>Context</a></li>
+            <li><a href="#case-challenge"><span>02</span>Challenge</a></li>
+            <li><a href="#case-goals"><span>03</span>Goals</a></li>
+            <li><a href="#case-role"><span>04</span>My role</a></li>
+            <li><a href="#case-approach"><span>05</span>Approach</a></li>
+            <li><a href="#case-outcomes"><span>06</span>Outcomes</a></li>
+            <li><a href="#case-learning"><span>07</span>What I learned</a></li>
+          </ol>
+        </nav>
+
+        <div class="case__steps">
+          <section class="step" id="case-context" data-reveal>
+            <p class="step__k">01 · Context</p>
+            <h4>Background</h4>
+            <p><span class="ph">[Set the scene for a reader who knows nothing about it. Which course or workplace was this for? Who was the client or organisation, and what situation were they in?]</span></p>
+          </section>
+
+          <section class="step" id="case-challenge" data-reveal>
+            <p class="step__k">02 · Challenge</p>
+            <h4>The problem to solve</h4>
+            <p><span class="ph">[What exactly was the task or problem? Why did it matter, and what made it hard?]</span></p>
+          </section>
+
+          <section class="step" id="case-goals" data-reveal>
+            <p class="step__k">03 · Goals</p>
+            <h4>Goals and objectives</h4>
+            <ul class="ticks">
+              <li><span class="ph">[Objective 1, e.g., Identify the main causes of stock-outs]</span></li>
+              <li><span class="ph">[Objective 2, e.g., Recommend a reorder policy]</span></li>
+              <li><span class="ph">[Objective 3, e.g., Present a costed implementation plan]</span></li>
+            </ul>
+          </section>
+
+          <section class="step" id="case-role" data-reveal>
+            <p class="step__k">04 · My role</p>
+            <h4>How I was involved</h4>
+            <p><span class="ph">[Your responsibilities and contribution. If it was group work, be specific about which parts were yours.]</span></p>
+          </section>
+
+          <section class="step" id="case-approach" data-reveal>
+            <p class="step__k">05 · Approach</p>
+            <h4>How I approached it</h4>
+            <ol class="phases" data-reveal-group>
+              <li><span class="phases__n">A</span><h5>Research</h5><p><span class="ph">[Sources, interviews, data you gathered.]</span></p></li>
+              <li><span class="phases__n">B</span><h5>Analyse</h5><p><span class="ph">[Frameworks or tools, e.g., SWOT, root-cause analysis.]</span></p></li>
+              <li><span class="phases__n">C</span><h5>Recommend</h5><p><span class="ph">[Options considered and the one chosen.]</span></p></li>
+              <li><span class="phases__n">D</span><h5>Present</h5><p><span class="ph">[How you communicated it: report, pitch, dashboard.]</span></p></li>
+            </ol>
+          </section>
+
+          <section class="step" id="case-outcomes" data-reveal>
+            <p class="step__k">06 · Outcomes</p>
+            <h4>What came of it</h4>
+            <div class="outcomes" data-reveal-group>
+              <div class="outcome"><p class="outcome__k">Result</p><p class="outcome__v"><span class="ph">[e.g., A grade]</span></p><p><span class="ph">[Grade, assessment feedback or recognition.]</span></p></div>
+              <div class="outcome"><p class="outcome__k">Impact</p><p class="outcome__v"><span class="ph">[e.g., −18% stock-outs]</span></p><p><span class="ph">[The measurable effect or projected benefit.]</span></p></div>
+              <div class="outcome"><p class="outcome__k">Feedback</p><p class="outcome__v"><span class="ph">[e.g., Adopted by client]</span></p><p><span class="ph">[What the lecturer, client or team said.]</span></p></div>
+            </div>
+            <div class="evidence" data-reveal-group>
+              <figure class="evidence__item"><div class="evidence__slot"><span>Image</span></div><figcaption><span class="ph">[Report extract]</span></figcaption></figure>
+              <figure class="evidence__item"><div class="evidence__slot"><span>Image</span></div><figcaption><span class="ph">[Key presentation slide]</span></figcaption></figure>
+              <figure class="evidence__item"><div class="evidence__slot"><span>Image</span></div><figcaption><span class="ph">[Data model or dashboard]</span></figcaption></figure>
+            </div>
+          </section>
+
+          <section class="step" id="case-learning" data-reveal>
+            <p class="step__k">07 · What I learned</p>
+            <h4>Looking back</h4>
+            <blockquote class="pull"><span class="ph">[The single most important lesson, in one or two sentences.]</span></blockquote>
+            <p><span class="ph">[What you'd do differently next time, and how this project shaped the goals in your development plan.]</span></p>
+          </section>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ============================ 03 PROFESSIONAL DEVELOPMENT ============================ -->
+<section class="section" id="development" aria-labelledby="dev-title">
+  <div class="wrap">
+    <header class="section-head" data-reveal>
+      <p class="section-head__index"><span>03</span>Professional development</p>
+      <h2 class="section-head__title" id="dev-title">Growth plan</h2>
+      <p class="section-head__lede">The skills I'm building, the career moves I'm working toward, and the CV that records where I've been.</p>
+    </header>
+
+    <div class="stack">
+      <div class="pplg" id="pplg">
+        <div class="pplg__intro" data-reveal>
+          <h3 class="sub-title">Personal and professional learning goals</h3>
+          <p>Each goal is written to be specific, measurable and time-bound, and each one answers an area for development from my self-evaluation.</p>
+        </div>
+
+        <div class="goal-group">
+          <div class="goal-group__head" data-reveal>
+            <p class="goal-group__k">A</p>
+            <h4>Personal learning goals</h4>
+            <p>Skills and competencies I want to develop.</p>
+          </div>
+          <div class="goals" data-reveal-group>
+            <article class="goal">
+              <header class="goal__top"><span class="goal__id">P1</span><span class="goal__theme">Leadership</span></header>
+              <h5 class="goal__title"><span class="ph">[e.g., Lead a student project team of four through a full delivery cycle]</span></h5>
+              <dl class="goal__dl">
+                <div><dt>Why</dt><dd><span class="ph">[The development area this answers.]</span></dd></div>
+                <div><dt>How</dt><dd><span class="ph">[Two or three concrete actions.]</span></dd></div>
+                <div><dt>By when</dt><dd><span class="ph">[Month 2027]</span></dd></div>
+                <div><dt>Measure</dt><dd><span class="ph">[How you'll know you got there.]</span></dd></div>
+              </dl>
+            </article>
+            <article class="goal">
+              <header class="goal__top"><span class="goal__id">P2</span><span class="goal__theme">Project management</span></header>
+              <h5 class="goal__title"><span class="ph">[e.g., Plan and track a project using a Gantt chart and weekly status reports]</span></h5>
+              <dl class="goal__dl">
+                <div><dt>Why</dt><dd><span class="ph">[The development area this answers.]</span></dd></div>
+                <div><dt>How</dt><dd><span class="ph">[Actions, e.g., short course, practice on a group assignment.]</span></dd></div>
+                <div><dt>By when</dt><dd><span class="ph">[Month 2027]</span></dd></div>
+                <div><dt>Measure</dt><dd><span class="ph">[Evidence of success.]</span></dd></div>
+              </dl>
+            </article>
+            <article class="goal">
+              <header class="goal__top"><span class="goal__id">P3</span><span class="goal__theme"><span class="ph">[Industry skill]</span></span></header>
+              <h5 class="goal__title"><span class="ph">[e.g., Build three Power BI dashboards from real business data]</span></h5>
+              <dl class="goal__dl">
+                <div><dt>Why</dt><dd><span class="ph">[Why employers in your field value this.]</span></dd></div>
+                <div><dt>How</dt><dd><span class="ph">[Actions.]</span></dd></div>
+                <div><dt>By when</dt><dd><span class="ph">[Month 2027]</span></dd></div>
+                <div><dt>Measure</dt><dd><span class="ph">[Evidence of success.]</span></dd></div>
+              </dl>
+            </article>
+          </div>
+        </div>
+
+        <div class="goal-group">
+          <div class="goal-group__head" data-reveal>
+            <p class="goal-group__k">B</p>
+            <h4>Professional learning goals</h4>
+            <p>Specific career objectives.</p>
+          </div>
+          <div class="goals" data-reveal-group>
+            <article class="goal">
+              <header class="goal__top"><span class="goal__id">C1</span><span class="goal__theme">Career move</span></header>
+              <h5 class="goal__title"><span class="ph">[e.g., Secure a graduate role as an Operations Analyst in Auckland]</span></h5>
+              <dl class="goal__dl">
+                <div><dt>Strategy</dt><dd><span class="ph">[e.g., Target 20 companies, tailor each application, practise interviews.]</span></dd></div>
+                <div><dt>By when</dt><dd><span class="ph">[Month 2027]</span></dd></div>
+                <div><dt>Measure</dt><dd><span class="ph">[e.g., Offer accepted.]</span></dd></div>
+              </dl>
+            </article>
+            <article class="goal">
+              <header class="goal__top"><span class="goal__id">C2</span><span class="goal__theme">Network</span></header>
+              <h5 class="goal__title"><span class="ph">[e.g., Build a network of 150 relevant professionals in New Zealand]</span></h5>
+              <dl class="goal__dl">
+                <div><dt>Strategy</dt><dd><span class="ph">[e.g., Two industry events a month, LinkedIn posts, informational interviews.]</span></dd></div>
+                <div><dt>By when</dt><dd><span class="ph">[Month 2027]</span></dd></div>
+                <div><dt>Measure</dt><dd><span class="ph">[Connections made, referrals received.]</span></dd></div>
+              </dl>
+            </article>
+            <article class="goal">
+              <header class="goal__top"><span class="goal__id">C3</span><span class="goal__theme">Credentials</span></header>
+              <h5 class="goal__title"><span class="ph">[e.g., Earn a recognised certification or join a professional body in your field]</span></h5>
+              <dl class="goal__dl">
+                <div><dt>Strategy</dt><dd><span class="ph">[Study plan, cost, exam date.]</span></dd></div>
+                <div><dt>By when</dt><dd><span class="ph">[Month 2028]</span></dd></div>
+                <div><dt>Measure</dt><dd><span class="ph">[Certificate or membership.]</span></dd></div>
+              </dl>
+            </article>
+          </div>
+        </div>
+      </div>
+
+      <!-- CV -->
+      <div class="cv" id="cv">
+        <div class="cv__aside" data-reveal>
+          <h3 class="sub-title">Curriculum vitae</h3>
+          <p>My CV follows New Zealand conventions: reverse-chronological order, two pages at most, referees included, and no photo, age or marital status.</p>
+          <ul class="checklist">
+            <li>Profile and key skills first</li>
+            <li>Achievements, not just duties</li>
+            <li>Work rights stated clearly</li>
+          </ul>
+          <p class="cv__updated">Last updated <span class="ph">[Month 2026]</span></p>
+          <!-- When your PDF is ready, link it here and remove the hidden attribute:
+               <a class="btn btn--route" href="LINK-TO-YOUR-CV.pdf" target="_blank" rel="noopener">Open CV as PDF</a> -->
+        </div>
+
+        <div class="cv__paper">
+          <article class="sheet" aria-label="Curriculum vitae of Aum Patel">
+            <header class="sheet__head">
+              <div>
+                <p class="sheet__name">Aum Patel</p>
+                <p class="sheet__role"><span class="ph">[Professional title, e.g., Business graduate · Operations and analytics]</span></p>
+              </div>
+              <ul class="sheet__contact">
+                <li>Auckland, New Zealand</li>
+                <li><span class="ph">[+64 21 000 0000]</span></li>
+                <li><span class="ph">[your.name@email.com]</span></li>
+                <li><span class="ph">[linkedin.com/in/your-profile]</span></li>
+              </ul>
+            </header>
+            <p class="sheet__rights"><strong>Work rights:</strong> <span class="ph">[e.g., Student visa with work rights; eligible for a Post-Study Work Visa]</span></p>
+
+            <section class="sheet__sec">
+              <h4>Profile</h4>
+              <p><span class="ph">[Three or four sentences: who you are professionally, your key strengths, the qualification you're completing, and the role you're looking for in New Zealand.]</span></p>
+            </section>
+
+            <section class="sheet__sec">
+              <h4>Key skills</h4>
+              <ul class="sheet__skills">
+                <li><span class="ph">[Stakeholder communication]</span></li>
+                <li><span class="ph">[Data analysis: Excel, Power BI]</span></li>
+                <li><span class="ph">[Project coordination]</span></li>
+                <li><span class="ph">[Team leadership]</span></li>
+                <li><span class="ph">[Problem solving]</span></li>
+                <li><span class="ph">[Customer service]</span></li>
+              </ul>
+            </section>
+
+            <section class="sheet__sec">
+              <h4>Education</h4>
+              <div class="sheet__item">
+                <div class="sheet__line">
+                  <p class="sheet__what"><span class="ph">[Master of Management / MBI / PGDM / PGDBI]</span></p>
+                  <p class="sheet__when"><span class="ph">[2025 – 2026]</span></p>
+                </div>
+                <p class="sheet__where">ICL Graduate Business School, Auckland</p>
+                <ul>
+                  <li>Key courses: <span class="ph">[course names]</span></li>
+                  <li><span class="ph">[A notable project, grade or award]</span></li>
+                </ul>
+              </div>
+              <div class="sheet__item">
+                <div class="sheet__line">
+                  <p class="sheet__what"><span class="ph">[Previous degree, e.g., Bachelor of Commerce]</span></p>
+                  <p class="sheet__when"><span class="ph">[Year]</span></p>
+                </div>
+                <p class="sheet__where"><span class="ph">[University, City, Country]</span></p>
+              </div>
+            </section>
+
+            <section class="sheet__sec">
+              <h4>Experience</h4>
+              <div class="sheet__item">
+                <div class="sheet__line">
+                  <p class="sheet__what"><span class="ph">[Job title]</span></p>
+                  <p class="sheet__when"><span class="ph">[Mon YYYY – Present]</span></p>
+                </div>
+                <p class="sheet__where"><span class="ph">[Organisation, City]</span></p>
+                <ul>
+                  <li><span class="ph">[Action verb + what you did + measurable result, e.g., Cut weekly reporting time by 30% by automating Excel dashboards.]</span></li>
+                  <li><span class="ph">[Achievement 2]</span></li>
+                  <li><span class="ph">[Achievement 3]</span></li>
+                </ul>
+              </div>
+              <div class="sheet__item">
+                <div class="sheet__line">
+                  <p class="sheet__what"><span class="ph">[Job title]</span></p>
+                  <p class="sheet__when"><span class="ph">[Mon YYYY – Mon YYYY]</span></p>
+                </div>
+                <p class="sheet__where"><span class="ph">[Organisation, City, Country]</span></p>
+                <ul>
+                  <li><span class="ph">[Achievement 1]</span></li>
+                  <li><span class="ph">[Achievement 2]</span></li>
+                </ul>
+              </div>
+            </section>
+
+            <section class="sheet__sec">
+              <h4>Volunteering and leadership</h4>
+              <p><span class="ph">[Role, organisation, dates, and one line on the contribution.]</span></p>
+            </section>
+
+            <section class="sheet__sec">
+              <h4>Certifications</h4>
+              <p><span class="ph">[Certificate, issuing body, year.]</span></p>
+            </section>
+
+            <section class="sheet__sec">
+              <h4>Referees</h4>
+              <div class="sheet__refs">
+                <p><strong><span class="ph">[Referee name]</span></strong><br><span class="ph">[Title, Organisation]</span><br><span class="ph">[Phone · Email]</span></p>
+                <p><strong><span class="ph">[Referee name]</span></strong><br><span class="ph">[Title, Organisation]</span><br><span class="ph">[Phone · Email]</span></p>
+              </div>
+            </section>
+          </article>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 04 REFLECTIVE LEARNING ============================ -->
+<section class="section section--sunk" id="reflections" aria-labelledby="ref-title">
+  <div class="wrap">
+    <header class="section-head" data-reveal>
+      <p class="section-head__index"><span>04</span>Reflective learning</p>
+      <h2 class="section-head__title" id="ref-title">Reflective journal</h2>
+      <p class="section-head__lede">Five reflections on specific things I learned in my ICL courses, plus one on feedback from my peers. Select an entry to read it in full.</p>
+    </header>
+
+    <div class="journal" data-reveal-group>
+      <!-- Journal 01 -->
+      <article class="entry" data-kicker="Journal 01">
+        <canvas class="entry__terrain" data-contours="e1" aria-hidden="true"></canvas>
+        <div class="entry__top"><span class="entry__n">01</span><span class="entry__course"><span class="ph">[Course code]</span></span></div>
+        <h3 class="entry__title"><span class="ph">[Title, e.g., What a self-awareness test taught me about how I decide]</span></h3>
+        <p class="entry__excerpt"><span class="ph">[One-sentence summary of the reflection.]</span></p>
+        <p class="entry__foot"><span class="entry__date"><span class="ph">[Month 2026]</span></span><span class="entry__time">1 min read</span></p>
+        <button class="entry__open" type="button" aria-haspopup="dialog"><span class="sr-only">Read journal 01</span><span class="entry__cta" aria-hidden="true">Read →</span></button>
+        <div class="entry__full" hidden>
+          <h4>What I learned</h4>
+          <p><span class="ph">[Name the specific learning or skill, and the course where you met it. Be precise: a model, a tool, a concept, an assessment result.]</span></p>
+          <h4>Why it was useful</h4>
+          <p><span class="ph">[How it helped you in your studies, your work or your personal development. Give one concrete example.]</span></p>
+          <h4>How I'm applying it</h4>
+          <p><span class="ph">[Where you have used it already, or exactly how you will use it in a real situation. Aim for 200–350 words across the three parts.]</span></p>
+        </div>
+      </article>
+
+      <!-- Journal 02 -->
+      <article class="entry" data-kicker="Journal 02">
+        <canvas class="entry__terrain" data-contours="e2" aria-hidden="true"></canvas>
+        <div class="entry__top"><span class="entry__n">02</span><span class="entry__course"><span class="ph">[Course code]</span></span></div>
+        <h3 class="entry__title"><span class="ph">[Title, e.g., Turning conflict into progress in a team project]</span></h3>
+        <p class="entry__excerpt"><span class="ph">[One-sentence summary of the reflection.]</span></p>
+        <p class="entry__foot"><span class="entry__date"><span class="ph">[Month 2026]</span></span><span class="entry__time">1 min read</span></p>
+        <button class="entry__open" type="button" aria-haspopup="dialog"><span class="sr-only">Read journal 02</span><span class="entry__cta" aria-hidden="true">Read →</span></button>
+        <div class="entry__full" hidden>
+          <h4>What I learned</h4>
+          <p><span class="ph">[The specific learning or skill, and where it came from.]</span></p>
+          <h4>Why it was useful</h4>
+          <p><span class="ph">[How it helped, with one concrete example.]</span></p>
+          <h4>How I'm applying it</h4>
+          <p><span class="ph">[How you have used it, or will use it, in a real-world context.]</span></p>
+        </div>
+      </article>
+
+      <!-- Journal 03 -->
+      <article class="entry" data-kicker="Journal 03">
+        <canvas class="entry__terrain" data-contours="e3" aria-hidden="true"></canvas>
+        <div class="entry__top"><span class="entry__n">03</span><span class="entry__course"><span class="ph">[Course code]</span></span></div>
+        <h3 class="entry__title"><span class="ph">[Title, e.g., Learning to let the data lead the argument]</span></h3>
+        <p class="entry__excerpt"><span class="ph">[One-sentence summary of the reflection.]</span></p>
+        <p class="entry__foot"><span class="entry__date"><span class="ph">[Month 2026]</span></span><span class="entry__time">1 min read</span></p>
+        <button class="entry__open" type="button" aria-haspopup="dialog"><span class="sr-only">Read journal 03</span><span class="entry__cta" aria-hidden="true">Read →</span></button>
+        <div class="entry__full" hidden>
+          <h4>What I learned</h4>
+          <p><span class="ph">[The specific learning or skill, and where it came from.]</span></p>
+          <h4>Why it was useful</h4>
+          <p><span class="ph">[How it helped, with one concrete example.]</span></p>
+          <h4>How I'm applying it</h4>
+          <p><span class="ph">[How you have used it, or will use it, in a real-world context.]</span></p>
+        </div>
+      </article>
+
+      <!-- Journal 04 -->
+      <article class="entry" data-kicker="Journal 04">
+        <canvas class="entry__terrain" data-contours="e4" aria-hidden="true"></canvas>
+        <div class="entry__top"><span class="entry__n">04</span><span class="entry__course"><span class="ph">[Course code]</span></span></div>
+        <h3 class="entry__title"><span class="ph">[Title, e.g., Presenting to a panel: preparation beats nerves]</span></h3>
+        <p class="entry__excerpt"><span class="ph">[One-sentence summary of the reflection.]</span></p>
+        <p class="entry__foot"><span class="entry__date"><span class="ph">[Month 2026]</span></span><span class="entry__time">1 min read</span></p>
+        <button class="entry__open" type="button" aria-haspopup="dialog"><span class="sr-only">Read journal 04</span><span class="entry__cta" aria-hidden="true">Read →</span></button>
+        <div class="entry__full" hidden>
+          <h4>What I learned</h4>
+          <p><span class="ph">[The specific learning or skill, and where it came from.]</span></p>
+          <h4>Why it was useful</h4>
+          <p><span class="ph">[How it helped, with one concrete example.]</span></p>
+          <h4>How I'm applying it</h4>
+          <p><span class="ph">[How you have used it, or will use it, in a real-world context.]</span></p>
+        </div>
+      </article>
+
+      <!-- Journal 05 -->
+      <article class="entry" data-kicker="Journal 05">
+        <canvas class="entry__terrain" data-contours="e5" aria-hidden="true"></canvas>
+        <div class="entry__top"><span class="entry__n">05</span><span class="entry__course"><span class="ph">[Course code]</span></span></div>
+        <h3 class="entry__title"><span class="ph">[Title, e.g., Managing time across study, work and a new country]</span></h3>
+        <p class="entry__excerpt"><span class="ph">[One-sentence summary of the reflection.]</span></p>
+        <p class="entry__foot"><span class="entry__date"><span class="ph">[Month 2026]</span></span><span class="entry__time">1 min read</span></p>
+        <button class="entry__open" type="button" aria-haspopup="dialog"><span class="sr-only">Read journal 05</span><span class="entry__cta" aria-hidden="true">Read →</span></button>
+        <div class="entry__full" hidden>
+          <h4>What I learned</h4>
+          <p><span class="ph">[The specific learning or skill, and where it came from.]</span></p>
+          <h4>Why it was useful</h4>
+          <p><span class="ph">[How it helped, with one concrete example.]</span></p>
+          <h4>How I'm applying it</h4>
+          <p><span class="ph">[How you have used it, or will use it, in a real-world context.]</span></p>
+        </div>
+      </article>
+
+      <!-- Peer evaluation -->
+      <article class="entry entry--peer" data-kicker="Peer evaluation">
+        <canvas class="entry__terrain" data-contours="e6" data-tone="inv" aria-hidden="true"></canvas>
+        <div class="entry__top"><span class="entry__n">Peer</span><span class="entry__course"><span class="ph">[Course code]</span></span></div>
+        <h3 class="entry__title"><span class="ph">[Title, e.g., What my team taught me about how I present]</span></h3>
+        <p class="entry__excerpt"><span class="ph">[One-sentence summary of the feedback and what changed.]</span></p>
+        <p class="entry__foot"><span class="entry__date"><span class="ph">[Month 2026]</span></span><span class="entry__time">1 min read</span></p>
+        <button class="entry__open" type="button" aria-haspopup="dialog"><span class="sr-only">Read the peer evaluation</span><span class="entry__cta" aria-hidden="true">Read →</span></button>
+        <div class="entry__full" hidden>
+          <h4>The feedback I received</h4>
+          <blockquote class="quote"><p><span class="ph">["Quote or paraphrase the feedback from a classmate."]</span></p><footer><span class="ph">[Peer name or role], [course] team member</span></footer></blockquote>
+          <blockquote class="quote"><p><span class="ph">["A second piece of feedback, ideally on a different aspect."]</span></p><footer><span class="ph">[Peer name or role]</span></footer></blockquote>
+          <h4>What it told me</h4>
+          <p><span class="ph">[Summarise the feedback: the strengths your peers saw, and what they suggested you improve.]</span></p>
+          <h4>How it shaped my development</h4>
+          <p><span class="ph">[Reflect on how the feedback influenced your learning, including anything that surprised you.]</span></p>
+          <h4>What I've changed</h4>
+          <div class="changes">
+            <div><p class="changes__k">Before</p><p><span class="ph">[What you used to do.]</span></p></div>
+            <div><p class="changes__k">After</p><p><span class="ph">[What you do now, or plan to do.]</span></p></div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 05 CONTACT ============================ -->
+<section class="section contact" id="contact" aria-labelledby="contact-title">
+  <canvas class="contact__map" data-contours="contact" data-parallax aria-hidden="true"></canvas>
+  <div class="wrap">
+    <header class="section-head" data-reveal>
+      <p class="section-head__index"><span>05</span>Contact</p>
+      <h2 class="section-head__title" id="contact-title">Let's connect</h2>
+      <p class="section-head__lede">I'm open to networking, project collaboration and conversations about roles in <span class="ph">[your field]</span>.</p>
+    </header>
+
+    <div class="contact__grid">
+      <div class="contact__details" data-reveal>
+        <ul class="channels">
+          <li>
+            <span class="channels__k">Email</span>
+            <span class="channels__v" id="contact-email">your.name@email.com</span>
+            <button class="copy-btn" type="button" data-copy="#contact-email">Copy</button>
+          </li>
+          <li>
+            <span class="channels__k">Phone</span>
+            <span class="channels__v"><span class="ph">[+64 21 000 0000]</span></span>
+          </li>
+          <li>
+            <span class="channels__k">LinkedIn</span>
+            <a class="channels__v" href="https://www.linkedin.com/in/your-profile" target="_blank" rel="noopener">linkedin.com/in/your-profile ↗</a>
+          </li>
+          <li>
+            <span class="channels__k">Based in</span>
+            <span class="channels__v">Auckland, New Zealand. It's <span data-nz-time>--:--</span> here now.</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- To receive messages, create a free form at formspree.io and paste its URL into data-endpoint. -->
+      <form class="form" id="contact-form" data-endpoint="" novalidate data-reveal>
+        <fieldset class="chips">
+          <legend>I'd like to talk about</legend>
+          <label class="chip"><input type="radio" name="topic" id="topic-network" value="Networking" checked><span>Networking</span></label>
+          <label class="chip"><input type="radio" name="topic" id="topic-collab" value="Collaboration"><span>Collaboration</span></label>
+          <label class="chip"><input type="radio" name="topic" id="topic-role" value="A role or opportunity"><span>A role or opportunity</span></label>
+          <label class="chip"><input type="radio" name="topic" id="topic-other" value="Something else"><span>Something else</span></label>
+        </fieldset>
+        <div class="field">
+          <input id="cf-name" name="name" type="text" autocomplete="name" required placeholder=" " aria-describedby="cf-name-error">
+          <label for="cf-name">Your name</label>
+          <p class="field__error" id="cf-name-error"></p>
+        </div>
+        <div class="field">
+          <input id="cf-email" name="email" type="email" autocomplete="email" required placeholder=" " aria-describedby="cf-email-error">
+          <label for="cf-email">Email address</label>
+          <p class="field__error" id="cf-email-error"></p>
+        </div>
+        <div class="field">
+          <textarea id="cf-message" name="message" rows="5" required placeholder=" " aria-describedby="cf-message-error"></textarea>
+          <label for="cf-message">Message</label>
+          <p class="field__error" id="cf-message-error"></p>
+        </div>
+        <div class="form__actions">
+          <button class="btn btn--route" type="submit">Send message <span class="arrow" aria-hidden="true">→</span></button>
+          <p class="form__status" role="status" aria-live="polite"></p>
+        </div>
+        <div class="form__fallback" id="form-fallback" hidden>
+          <label class="form__fallback-k" for="composed-message">Your message</label>
+          <textarea id="composed-message" rows="7" readonly></textarea>
+          <div class="form__fallback-actions">
+            <button class="btn btn--ghost btn--sm" type="button" id="copy-composed">Copy message</button>
+            <a class="btn btn--ghost btn--sm" id="composed-mail" href="#contact">Open in email app</a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ============================ FOOTER ============================ -->
+<footer class="footer">
+  <div class="wrap">
+    <p class="footer__big" aria-hidden="true">Aum Patel</p>
+    <div class="footer__row">
+      <p>© <span data-year>2026</span> Aum Patel · ePortfolio for ICL Graduate Business School</p>
+      <p class="footer__coords">36.8485° S, 174.7633° E</p>
+      <a class="footer__top" href="#top">Back to top ↑</a>
+    </div>
+  </div>
+</footer>
+
+<!-- Journal reader -->
+<dialog class="reader" id="reader" aria-labelledby="reader-title">
+  <div class="reader__bar">
+    <p class="reader__kicker" id="reader-kicker"></p>
+    <div class="reader__nav">
+      <span class="reader__count" id="reader-count"></span>
+      <button class="icon-btn" type="button" data-reader-prev aria-label="Previous entry">←</button>
+      <button class="icon-btn" type="button" data-reader-next aria-label="Next entry">→</button>
+      <button class="icon-btn" type="button" data-reader-close aria-label="Close">✕</button>
+    </div>
+  </div>
+  <div class="reader__progress" aria-hidden="true"></div>
+  <div class="reader__scroll" data-lenis-prevent>
+    <h2 class="reader__title" id="reader-title" tabindex="-1"></h2>
+    <p class="reader__meta" id="reader-meta"></p>
+    <div class="reader__body" id="reader-body"></div>
+  </div>
+</dialog>
+
+<!-- Draft helper: disappears by itself once every [placeholder] has been replaced -->
+<div class="draft" id="draft" hidden>
+  <button class="draft__main" type="button" data-draft-next><span class="draft__dot" aria-hidden="true"></span><span><span id="draft-count">0</span> placeholders to fill</span><span class="draft__pos" id="draft-pos">Next →</span></button>
+  <button class="draft__x" type="button" data-draft-hide aria-label="Hide placeholder counter">✕</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script type="module" src="assets/js/main.js"></script>
+</body>
+</html>
