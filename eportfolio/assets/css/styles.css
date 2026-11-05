@@ -329,6 +329,7 @@ cite { font-style: italic; }
 .hero__map::after {
   content: ""; position: absolute; inset: 0; pointer-events: none;
   background:
+    linear-gradient(180deg, var(--paper) 0, transparent calc(var(--header-h) + env(safe-area-inset-top, 0px) + 24px)),
     linear-gradient(90deg, var(--paper) 0%, color-mix(in srgb, var(--paper) 55%, transparent) 26%, transparent 46%),
     linear-gradient(0deg, var(--paper) 0%, transparent 20%);
 }
@@ -941,14 +942,24 @@ cite { font-style: italic; }
 }
 
 @media (max-width: 760px) {
-  .hero { min-height: 0; }
-  .hero__inner { padding-block: clamp(210px, 40svh, 360px) 24px; }
+  /* Phones: the map gets its own band above the text instead of sitting behind it. */
+  .hero {
+    --map-h: calc(var(--header-h) + env(safe-area-inset-top, 0px) + clamp(220px, 40svh, 380px));
+    min-height: 0;
+  }
+  .hero__map { bottom: auto; height: var(--map-h); }
+  .hero__inner { padding-block: calc(var(--map-h) - var(--header-h) - env(safe-area-inset-top, 0px)) 24px; }
   .mapbar { display: none; }
   .mapbar__note { margin-top: 0; padding-top: 12px; border-top: 1px solid var(--rule-strong); }
   .hero__map::after {
     background:
-      linear-gradient(0deg, var(--paper) 0%, var(--paper) 30%, color-mix(in srgb, var(--paper) 70%, transparent) 46%, transparent 64%);
+      linear-gradient(180deg, var(--paper) 0, transparent calc(var(--header-h) + env(safe-area-inset-top, 0px) + 20px)),
+      linear-gradient(0deg, var(--paper) 0%, transparent 18%);
   }
+  .draft { right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+  .draft__main { gap: 8px; padding: 8px 4px 8px 12px; }
+  .draft__long { display: none; }
+  .draft__x { padding: 0 12px 0 6px; }
   .hero__title { margin-block: 14px 20px; }
   .legend__items { gap: 8px 16px; }
   .map-label--spot, .map-label--water { display: none; }

@@ -99,13 +99,15 @@ const fragmentShader = /* glsl */ `
   }
 `;
 
-/* Camera framings: orbit around a target (degrees), plus a view offset that
-   slides the map right on wide screens and up on tall ones. labelMinX hides
-   small labels that would sit behind the headline. */
+/* Camera orientations (orbit around the middle of the route, in degrees).
+   Size and position on screen are not hand-tuned: fit() measures the free
+   space around the page text and zooms the camera so the whole route and its
+   labels land inside it. "side" puts the map beside the headline, "above"
+   puts it above the text. */
 const LAYOUTS = {
-  wide: { fov: 28, target: [0.42, 0.12, -0.04], dist: 6.7, elev: 37, azim: 16, fullW: 1.53, fullH: 1, offX: 0, offY: -0.05, labelMinX: 0.5 },
-  mid: { fov: 30, target: [0.4, 0.1, -0.02], dist: 7.0, elev: 40, azim: 14, fullW: 1.22, fullH: 1.06, offX: 0, offY: 0.02, labelMinX: 0.34 },
-  tall: { fov: 34, target: [0.38, 0.12, 0.02], dist: 10.6, elev: 50, azim: 20, fullW: 1, fullH: 1, offX: 0, offY: 0.25, labelMinX: 0 },
+  wide: { mode: 'side', fov: 28, target: [0.38, 0.15, 0.08], dist: 6.7, elev: 37, azim: 16 },
+  mid: { mode: 'above', fov: 30, target: [0.38, 0.15, 0.08], dist: 7.4, elev: 44, azim: 18 },
+  tall: { mode: 'above', fov: 34, target: [0.38, 0.15, 0.08], dist: 9.5, elev: 50, azim: 20 },
 };
 
 function orbit(out, t, dist, elevDeg, azimDeg) {
@@ -226,7 +228,7 @@ export async function initHeroMap({ canvas, labelsEl, host, hud, reducedMotion }
     el.className = 'map-label map-label--wp';
     el.innerHTML = `<div class="map-label__box"><span class="map-label__n">${w.n}</span><span class="map-label__t">${w.label}</span><span class="map-label__p">${w.place}</span></div>`;
     labelsEl.appendChild(el);
-    labels.push({ el, world: base.clone().add(new THREE.Vector3(0, stemH + 0.03, 0)), at: 0.5 + i * 0.12, kind: 'wp' });
+    labels.push({ el, box: el.firstElementChild, world: base.clone().add(new THREE.Vector3(0, stemH + 0.03, 0)), at: 0.5 + i * 0.12, kind: 'wp' });
   });
 
   const spotCones = new Set(['Ōwairaka', 'Maungarei', 'Puketāpapa']);
@@ -246,10 +248,100 @@ export async function initHeroMap({ canvas, labelsEl, host, hud, reducedMotion }
     labels.push({ el, world: new THREE.Vector3(-0.2 * HALF, 0.01, -0.52 * HALF), at: 0.75, kind: 'water' });
   }
 
-  /* ---------- layout ---------- */
+  /* ---------- layout: fit the route into the free space ---------- */
   let W = 1;
   let H = 1;
   let layout = LAYOUTS.wide;
+  let safe = { l: 0, r: 1, t: 0, b: 1 };
+  const v = new THREE.Vector3();
+  const fitPoints = routeCurve.points.filter((_, i) => i % 20 === 0);
+  pins.forEach((pin) => fitPoints.push(pin.base, pin.base.clone().add(new THREE.Vector3(0, pin.stemH, 0))));
+  const wpLabels = labels.filter((L) => L.kind === 'wp');
+  const page = host;
+  const headerEl = document.querySelector('[data-header]');
+  const copyEl = page.querySelector('.hero__copy');
+  const footEl = page.querySelector('.hero__foot');
+  const titleSpans = Array.from(page.querySelectorAll('.hero__title .line > span'));
+
+  // Free space inside the canvas, in canvas pixels. Offsets ignore CSS
+  // transforms, so the intro animation does not skew the measurement.
+  function freeSpace() {
+    const top = (headerEl ? headerEl.offsetHeight : 64) + 14;
+    const beside = () => {
+      const titleRight = titleSpans.reduce((m, el) => Math.max(m, el.offsetLeft + el.offsetWidth), 0);
+      const labelsLeft = Math.min(W * 0.72, titleRight + 20);
+      const pointsLeft = Math.min(labelsLeft, Math.max(W * 0.42, titleRight - W * 0.1));
+      const bottom = (footEl ? footEl.offsetTop : H) - 20;
+      return { l: pointsLeft, labelShift: labelsLeft - pointsLeft, r: W - 28, t: top, b: Math.max(top + 200, bottom) };
+    };
+    const above = () => {
+      const copyTop = copyEl ? copyEl.offsetTop : H * 0.5;
+      return { l: 16, labelShift: 0, r: W - 16, t: top, b: Math.min(H - 12, copyTop - 22) };
+    };
+    if (layout.mode === 'side') return beside();
+    // Prefer the band above the text; if the text leaves no room there
+    // (landscape phones), use the space beside the headline instead.
+    const a = above();
+    if (a.b - a.t >= 200) return a;
+    const b = beside();
+    if (b.r - b.l - b.labelShift >= 220) return b;
+    a.b = Math.min(H - 12, top + 200);
+    return a;
+  }
+
+  function bounds(labelShift) {
+    let l = Infinity;
+    let r = -Infinity;
+    let t = Infinity;
+    let b = -Infinity;
+    const add = (x, y) => {
+      if (x < l) l = x;
+      if (x > r) r = x;
+      if (y < t) t = y;
+      if (y > b) b = y;
+    };
+    for (const p of fitPoints) {
+      v.copy(p).project(camera);
+      add((v.x * 0.5 + 0.5) * W, (-v.y * 0.5 + 0.5) * H);
+    }
+    for (const L of wpLabels) {
+      v.copy(L.world).project(camera);
+      const x = (v.x * 0.5 + 0.5) * W;
+      const y = (-v.y * 0.5 + 0.5) * H;
+      const bw = L.box.offsetWidth || 120;
+      const bh = L.box.offsetHeight || 36;
+      add(x - bw / 2 - labelShift, y - 10 - bh);
+      add(x + bw / 2, y);
+    }
+    return { l, r, t, b };
+  }
+
+  function fit() {
+    safe = freeSpace();
+    camera.fov = layout.fov;
+    camera.aspect = W / H;
+    camera.zoom = 1;
+    camera.clearViewOffset();
+    orbit(camera.position, target, layout.dist, layout.elev, layout.azim);
+    camera.lookAt(target);
+    camera.updateMatrixWorld();
+    camera.updateProjectionMatrix();
+    let zoom = 1;
+    let box;
+    for (let k = 0; k < 8; k++) {
+      camera.zoom = zoom;
+      camera.updateProjectionMatrix();
+      box = bounds(safe.labelShift);
+      const f = Math.min((safe.r - safe.l) / (box.r - box.l), (safe.b - safe.t) / (box.b - box.t));
+      if (Math.abs(f - 1) < 0.004) break;
+      zoom = Math.min(4, Math.max(0.2, zoom * f));
+    }
+    camera.zoom = zoom;
+    camera.updateProjectionMatrix();
+    box = bounds(safe.labelShift);
+    camera.setViewOffset(W, H, (box.l + box.r) / 2 - (safe.l + safe.r) / 2, (box.t + box.b) / 2 - (safe.t + safe.b) / 2, W, H);
+    camera.updateProjectionMatrix();
+  }
 
   function resize() {
     const rect = canvas.parentElement.getBoundingClientRect();
@@ -257,14 +349,10 @@ export async function initHeroMap({ canvas, labelsEl, host, hud, reducedMotion }
     H = Math.max(1, Math.round(rect.height));
     renderer.setSize(W, H, false);
     layout = W >= 1000 && W / H > 1.15 ? LAYOUTS.wide : W / H < 0.95 ? LAYOUTS.tall : LAYOUTS.mid;
-    const fullW = W * layout.fullW;
-    const fullH = H * layout.fullH;
-    camera.fov = layout.fov;
-    camera.aspect = fullW / fullH;
-    camera.setViewOffset(fullW, fullH, W * layout.offX, H * layout.offY, W, H);
-    camera.updateProjectionMatrix();
     target.set(...layout.target);
-    uniforms.uFog.value.set(layout.dist - 1.6, layout.dist + 2.6);
+    uniforms.uFog.value.set(layout.dist - 1.8, layout.dist + 2.8);
+    measureLabels();
+    fit();
     requestRender();
   }
 
@@ -350,17 +438,36 @@ export async function initHeroMap({ canvas, labelsEl, host, hud, reducedMotion }
   host.addEventListener('pointerleave', onLeave);
 
   /* ---------- labels ---------- */
-  const v = new THREE.Vector3();
+  // Label sizes, measured once per layout so the frame loop never forces layout.
+  function measureLabels() {
+    for (const L of labels) {
+      const box = L.el.firstElementChild;
+      L.w = box.offsetWidth;
+      L.h = box.offsetHeight;
+    }
+  }
+
+  const wpRects = [];
   function placeLabels(progress) {
+    wpRects.length = 0;
     for (const L of labels) {
       v.copy(L.world).project(camera);
       const x = (v.x * 0.5 + 0.5) * W;
       const y = (-v.y * 0.5 + 0.5) * H;
-      const minX = L.kind === 'wp' ? -40 : W * layout.labelMinX;
-      const inView = v.z < 1 && x > minX && x < W + 40 && y > -20 && y < H + 20;
-      const alpha = clamp01((progress - L.at) * 5);
+      let show = v.z < 1 && x > -40 && x < W + 40 && y > -20 && y < H + 20;
+      if (L.kind === 'wp') {
+        wpRects.push([x - L.w / 2 - 6, y - 10 - L.h - 6, x + L.w / 2 + 6, y + 6]);
+      } else {
+        // Small labels only show inside the free space, never behind the
+        // page text and never on top of a waypoint label.
+        const l = x - L.w / 2;
+        const t = y - L.h / 2;
+        show = show && x > safe.l + safe.labelShift && x < W - 20 && y > safe.t && y < safe.b
+          && !wpRects.some((r) => l < r[2] && l + L.w > r[0] && t < r[3] && t + L.h > r[1]);
+      }
+      const alpha = clamp01((progress - L.at) * 10);
       L.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
-      L.el.style.opacity = inView ? alpha.toFixed(3) : '0';
+      L.el.style.opacity = show ? alpha.toFixed(3) : '0';
     }
   }
 
@@ -400,8 +507,8 @@ export async function initHeroMap({ canvas, labelsEl, host, hud, reducedMotion }
       traveller.visible = draw >= 1;
       traveller.position.copy(routeCurve.getPointAt(tt));
       traveller.scale.setScalar(0.6 + Math.sin(tt * Math.PI) * 0.6);
-      parallax.x += (pointerX * 5 - parallax.x) * Math.min(1, dt * 2.5);
-      parallax.y += (-pointerY * 3 - parallax.y) * Math.min(1, dt * 2.5);
+      parallax.x += (pointerX * 3 - parallax.x) * Math.min(1, dt * 2.5);
+      parallax.y += (-pointerY * 1.5 - parallax.y) * Math.min(1, dt * 2.5);
     }
 
     // Intro: swing down from a high, distant view into the oblique map view.
@@ -451,6 +558,8 @@ export async function initHeroMap({ canvas, labelsEl, host, hud, reducedMotion }
 
   applyTheme();
   resize();
+  document.fonts?.ready.then(resize);
+  window.addEventListener('load', resize);
   frame(performance.now());
   start();
 
