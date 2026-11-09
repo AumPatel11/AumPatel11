@@ -152,6 +152,7 @@ const CROPS = {
   aspire: [-0.78, -0.82, 0.88, 0.8],
   banner: [0.15, -0.86, 0.85, -0.36],
   cover: [-0.08, 0.2, 0.46, 0.64],
+  cover2: [0.18, -0.86, 0.86, -0.3],
   e1: [-0.3, -0.08, 0.08, 0.24],
   e2: [0.0, 0.26, 0.34, 0.58],
   e3: [-0.72, 0.06, -0.34, 0.4],
@@ -325,14 +326,14 @@ if (finePointer && !reduced) {
   });
 }
 
-/* ---------------- case study step tracker ---------------- */
-const stepLinks = $$('.case__nav a');
-if (stepLinks.length) {
-  const marker = $('.case__nav .marker');
+/* ---------------- case study step trackers (one per case study) ---------------- */
+$$('.case').forEach((caseEl) => {
+  const links = $$('.case__nav a', caseEl);
+  if (!links.length) return;
+  const marker = $('.case__nav .marker', caseEl);
   const setActive = (id) => {
-    stepLinks.forEach((a) => {
-      const on = a.getAttribute('href') === `#${id}`;
-      if (on) {
+    links.forEach((a) => {
+      if (a.getAttribute('href') === `#${id}`) {
         a.setAttribute('aria-current', 'step');
         if (marker) {
           marker.style.transform = `translateY(${a.offsetTop}px)`;
@@ -341,12 +342,12 @@ if (stepLinks.length) {
       } else a.removeAttribute('aria-current');
     });
   };
-  const stepIO = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => { if (entry.isIntersecting) setActive(entry.target.id); });
+  const stepIO = new IntersectionObserver((list) => {
+    list.forEach((entry) => { if (entry.isIntersecting) setActive(entry.target.id); });
   }, { rootMargin: '-35% 0px -60% 0px' });
-  stepLinks.forEach((a) => { const t = $(a.getAttribute('href')); if (t) stepIO.observe(t); });
-  setActive(stepLinks[0].getAttribute('href').slice(1));
-}
+  links.forEach((a) => { const t = $(a.getAttribute('href')); if (t) stepIO.observe(t); });
+  setActive(links[0].getAttribute('href').slice(1));
+});
 
 /* ---------------- journal reader ---------------- */
 const reader = $('#reader');
