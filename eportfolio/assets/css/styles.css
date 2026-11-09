@@ -541,6 +541,13 @@ cite { font-style: italic; }
 .ledger__row p { font-size: 0.9375rem; color: var(--ink-soft); }
 .ledger__score { font-family: var(--font-mono); font-size: 0.8125rem !important; color: var(--ink) !important; }
 .ledger__label { display: none; color: var(--ink-faint); margin-bottom: 4px; }
+.tag {
+  display: inline-block; padding: 3px 8px; border-radius: 3px;
+  font: 600 var(--step--2)/1.45 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase;
+}
+.tag--good { background: color-mix(in srgb, var(--pounamu) 15%, transparent); color: var(--pounamu); }
+.tag--grow { background: var(--route-soft); color: var(--route-text); }
+.tag--style { border: 1px solid var(--rule-strong); color: var(--ink-soft); }
 
 .sw { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(24px, 4vw, 56px); margin-top: clamp(48px, 6vw, 80px); }
 .sw__title { display: flex; align-items: center; gap: 12px; font-size: var(--step-2); font-stretch: 112%; padding-bottom: 14px; border-bottom: 2px solid var(--ink); }
