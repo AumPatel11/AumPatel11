@@ -40,7 +40,7 @@ Things to update in `index.html`:
 
 1. **Photo**: put your photo at `assets/img/aum-patel.jpg` and replace the
    `portrait__placeholder` block with the `<img>` tag shown in the comment above it.
-2. **LinkedIn**: replace `https://www.linkedin.com/in/your-profile` (two places).
+2. **LinkedIn**: linked to linkedin.com/in/aum-patel-95086b356 (the LinkedIn card, the contact section and the CV). Change all three if the address changes.
 3. **Email**: replace `your.name@email.com` in the contact section and the CV.
 4. **Contact form**: create a free form at [formspree.io](https://formspree.io), then paste
    its URL into `data-endpoint=""` on `<form id="contact-form">`. Until then, the form gives
