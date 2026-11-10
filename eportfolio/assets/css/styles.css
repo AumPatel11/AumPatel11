@@ -576,6 +576,8 @@ cite { font-style: italic; }
   border-radius: 50%; border: 4px solid var(--paper-raised); background: var(--paper-sunk);
   font-size: 1.75rem; font-weight: 800; font-stretch: 125%; letter-spacing: -0.04em;
 }
+.li-card__avatar { overflow: hidden; }
+.li-card__avatar img { width: 100%; height: 100%; object-fit: cover; }
 .li-card__body { display: grid; gap: 6px; justify-items: start; padding: 14px 24px 28px; }
 .li-card__name { font-size: var(--step-2); font-weight: 700; font-stretch: 112%; }
 .li-card__headline { color: var(--ink-soft); }
