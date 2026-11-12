@@ -55,17 +55,33 @@ Things to update in `index.html`:
 Any static server works, for example:
 
 ```bash
-cd eportfolio && python3 -m http.server 8000
+cd docs && python3 -m http.server 8000
 ```
 
 Then open http://localhost:8000. Opening `index.html` straight from the file system will not
 load the scripts, because browsers block ES modules on `file://` URLs.
 
-## Publishing
+## Publishing: GitHub Pages and a free domain
 
-- **Netlify Drop**: drag the `eportfolio` folder onto https://app.netlify.com/drop.
-- **GitHub Pages**: Pages serves from the repository root or `/docs`, so either copy this
-  folder's contents into `/docs` or publish it with a Pages workflow.
+The site lives in `/docs` so GitHub Pages can serve it as it is. `.nojekyll` tells Pages to
+publish the files unchanged.
+
+1. **Turn on GitHub Pages** (once). In the repository go to **Settings → Pages → Build and
+   deployment**. Set **Source** to **Deploy from a branch**, pick the branch that holds this
+   folder (`claude/amazing-faraday-wi6lf3`, or `main` once merged) and the folder **/docs**,
+   then **Save**. About a minute later the site is live at
+   `https://aumpatel11.github.io/AumPatel11/`.
+2. **Register a free domain** at DigitalPlat (https://dash.domain.digitalplat.org/). The
+   free endings are `.dpdns.org`, `.us.kg`, `.qzz.io`, `.xx.kg` and `.qd.je`, with one domain
+   per account, for example `aumpatel.qzz.io`.
+3. **Point it at Cloudflare.** DigitalPlat has no DNS record editor, so add the domain to a
+   free Cloudflare account. Cloudflare shows two nameservers: enter both in the domain's
+   nameserver fields in the DigitalPlat dashboard.
+4. **Add the DNS record** in Cloudflare: type `CNAME`, name `@`, target
+   `aumpatel11.github.io`, proxy status **DNS only** (grey cloud).
+5. **Connect the domain.** Back in GitHub **Settings → Pages**, type the domain under
+   **Custom domain** and **Save**. When the DNS check passes (minutes to a few hours), tick
+   **Enforce HTTPS**. GitHub adds a `CNAME` file to this folder for you.
 
 The brief suggests Wix or WordPress; check with your lecturer that a custom site is
 acceptable before you submit.
@@ -73,8 +89,10 @@ acceptable before you submit.
 ## Files
 
 ```
-eportfolio/
+docs/
 ├── index.html            all page content
+├── .nojekyll             publish the files as they are on GitHub Pages
+├── assets/img/           portrait and LinkedIn card photo
 ├── assets/css/styles.css design tokens (light and dark), layout and components
 └── assets/js/
     ├── main.js           theme, navigation, scrolling, reader, form, contour panels
