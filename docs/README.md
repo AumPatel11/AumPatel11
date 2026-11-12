@@ -28,27 +28,46 @@ height field draws the contour panels used throughout the page.
 - If WebGL or the CDN is unavailable, the hero falls back to a flat contour map, and every
   section still reads normally without JavaScript.
 
-## Filling in your details
+## Live site
 
-Every piece of text you still need to write is wrapped in `<span class="ph">[...]</span>`
-and shows with a red dashed underline. While any remain, a small counter in the bottom-left
-corner says how many are left; select it to jump to the next one. When you replace a
-placeholder, delete the `<span class="ph">` wrapper too. The counter disappears by itself
-once none are left.
+**https://aumpatel.up.railway.app**
 
-Things to update in `index.html`:
+Railway (project `aum-eportfolio`, service `eportfolio`) serves this `/docs` folder as static
+files with Caddy. It rebuilds by itself on every push to `claude/amazing-faraday-wi6lf3` that
+changes something in `/docs`. The service sleeps when nobody is visiting, so it uses almost
+none of the Railway plan's monthly usage; the first visit after a quiet spell takes a second
+or two longer to open.
 
-1. **Photo**: put your photo at `assets/img/aum-patel.jpg` and replace the
-   `portrait__placeholder` block with the `<img>` tag shown in the comment above it.
-2. **LinkedIn**: linked to linkedin.com/in/aum-patel-95086b356 (the LinkedIn card, the contact section and the CV). Change all three if the address changes.
-3. **Email**: replace `your.name@email.com` in the contact section and the CV.
-4. **Contact form**: create a free form at [formspree.io](https://formspree.io), then paste
-   its URL into `data-endpoint=""` on `<form id="contact-form">`. Until then, the form gives
-   visitors a ready-made message to copy and email to you.
-5. **CV as PDF** (optional): add the link where the comment in the CV section shows.
-6. **Reflections**: each journal card has a title, a one-line excerpt and a hidden
-   `entry__full` block with three headings (What I learned, Why it was useful, How I'm
-   applying it). Aim for 200–350 words per post. Reading time is calculated automatically.
+## Contact form: one click to switch on
+
+Messages from the contact form go to **aumpatel987@gmail.com** through
+[FormSubmit](https://formsubmit.co) (free, no account). The address is set in
+`data-endpoint` on `<form id="contact-form">`.
+
+1. Open the live site and send yourself a test message from the form.
+2. FormSubmit emails aumpatel987@gmail.com a message with an **Activate Form** button.
+   Select it once (check the spam folder if it isn't in the inbox).
+3. From then on, every message arrives in your inbox, and replying answers the sender.
+
+Until it's activated, or whenever sending fails, the form gives the visitor a ready-made
+email to send instead, so no message is lost.
+
+## Updating your details
+
+Everything on the page is in `index.html`.
+
+- **Links to the work**: the "See the work live" list at the end of the project section,
+  the button on each case study and the CV's project entries link to ovenfreshbakery.uk,
+  the AussieStitch shop and uncheckdoc.com. When AussieStitch moves to its own domain,
+  replace `aussiestitch-production-1cbd.up.railway.app` everywhere it appears.
+- **LinkedIn**: linked to linkedin.com/in/aum-patel-95086b356 in the LinkedIn card, the
+  contact section, the CV and the footer.
+- **Email**: aumpatel987@gmail.com in the contact section, the CV, the footer and the form.
+- **Reflections**: each journal card has a title, a one-line excerpt and a hidden
+  `entry__full` block with three headings (What I learned, Why it was useful, How I'm
+  applying it). Aim for 200–350 words per post. Reading time is calculated automatically.
+- **Placeholders**: none are left. If you add text wrapped in `<span class="ph">[...]</span>`,
+  it shows with a red dashed underline and a counter in the corner until you replace it.
 
 ## Previewing locally
 
@@ -61,27 +80,28 @@ cd docs && python3 -m http.server 8000
 Then open http://localhost:8000. Opening `index.html` straight from the file system will not
 load the scripts, because browsers block ES modules on `file://` URLs.
 
-## Publishing: GitHub Pages and a free domain
+## A free custom domain (optional)
 
-The site lives in `/docs` so GitHub Pages can serve it as it is. `.nojekyll` tells Pages to
-publish the files unchanged.
+The Railway address works as it is. To use a free domain of your own as well:
 
-1. **Turn on GitHub Pages** (once). In the repository go to **Settings → Pages → Build and
-   deployment**. Set **Source** to **Deploy from a branch**, pick the branch that holds this
-   folder (`claude/amazing-faraday-wi6lf3`, or `main` once merged) and the folder **/docs**,
-   then **Save**. About a minute later the site is live at
-   `https://aumpatel11.github.io/AumPatel11/`.
-2. **Register a free domain** at DigitalPlat (https://dash.domain.digitalplat.org/). The
-   free endings are `.dpdns.org`, `.us.kg`, `.qzz.io`, `.xx.kg` and `.qd.je`, with one domain
-   per account, for example `aumpatel.qzz.io`.
-3. **Point it at Cloudflare.** DigitalPlat has no DNS record editor, so add the domain to a
+1. **Register it** at DigitalPlat (https://dash.domain.digitalplat.org/). The free endings
+   are `.dpdns.org`, `.us.kg`, `.qzz.io`, `.xx.kg` and `.qd.je`, with one domain per account,
+   for example `aumpatel.qzz.io`. DigitalPlat asks for your own name and contact details,
+   so only you can do this step.
+2. **Point it at Cloudflare.** DigitalPlat has no DNS record editor, so add the domain to a
    free Cloudflare account. Cloudflare shows two nameservers: enter both in the domain's
    nameserver fields in the DigitalPlat dashboard.
-4. **Add the DNS record** in Cloudflare: type `CNAME`, name `@`, target
-   `aumpatel11.github.io`, proxy status **DNS only** (grey cloud).
-5. **Connect the domain.** Back in GitHub **Settings → Pages**, type the domain under
-   **Custom domain** and **Save**. When the DNS check passes (minutes to a few hours), tick
-   **Enforce HTTPS**. GitHub adds a `CNAME` file to this folder for you.
+3. **Add it in Railway.** In the `eportfolio` service go to **Settings → Networking →
+   Custom Domain** and type the domain. Railway shows a `CNAME` record and a `TXT` record.
+4. **Add both records in Cloudflare**, with proxy status **DNS only** (grey cloud). Railway
+   checks them and issues the HTTPS certificate by itself, usually within an hour.
+
+## Alternative: GitHub Pages
+
+The folder also works on GitHub Pages unchanged (`.nojekyll` tells Pages to publish the
+files as they are). In the repository go to **Settings → Pages**, set **Source** to **Deploy
+from a branch**, pick `claude/amazing-faraday-wi6lf3` and the folder **/docs**, and **Save**.
+The site then also appears at `https://aumpatel11.github.io/AumPatel11/`.
 
 The brief suggests Wix or WordPress; check with your lecturer that a custom site is
 acceptable before you submit.
@@ -92,7 +112,7 @@ acceptable before you submit.
 docs/
 ├── index.html            all page content
 ├── .nojekyll             publish the files as they are on GitHub Pages
-├── assets/img/           portrait and LinkedIn card photo
+├── assets/img/           portrait, LinkedIn card photo and link preview (og.jpg)
 ├── assets/css/styles.css design tokens (light and dark), layout and components
 └── assets/js/
     ├── main.js           theme, navigation, scrolling, reader, form, contour panels
