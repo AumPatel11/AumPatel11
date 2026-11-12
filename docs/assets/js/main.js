@@ -474,38 +474,53 @@ if (form) {
     }
   }));
 
+  // Hand the visitor a ready-to-send email when the message can't go through the form.
+  const offerEmail = (data, subject, note) => {
+    const body = `${data.get('message')}\n\n${data.get('name')}\n${data.get('email')}`;
+    composed.value = `To: ${email}\nSubject: ${subject}\n\n${body}`;
+    mailLink.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    fallback.hidden = false;
+    status.textContent = note;
+    if (lenis) lenis.scrollTo(fallback, { offset: -window.innerHeight * 0.3 });
+    else fallback.scrollIntoView({ block: 'nearest', behavior: reduced ? 'auto' : 'smooth' });
+  };
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!validate()) return;
     const data = new FormData(form);
-    const topic = data.get('topic') || 'General enquiry';
+    const subject = `${data.get('topic') || 'General enquiry'} (via your ePortfolio)`;
     const endpoint = (form.dataset.endpoint || '').trim();
     const button = $('button[type="submit"]', form);
 
-    if (endpoint) {
-      button.disabled = true;
-      status.textContent = 'Sending your message…';
-      try {
-        const res = await fetch(endpoint, { method: 'POST', body: data, headers: { Accept: 'application/json' } });
-        if (!res.ok) throw new Error(String(res.status));
-        status.textContent = `Thanks, ${data.get('name')}. Your message has been sent and I'll reply by email.`;
-        form.reset();
-      } catch (err) {
-        status.textContent = `Your message couldn't be sent just now. Please email me directly at ${email}.`;
-      } finally {
-        button.disabled = false;
-      }
+    if (!endpoint) {
+      offerEmail(data, subject, 'Your message is ready. Copy it below and send it to my email address.');
       return;
     }
+    if (form.dataset.sending) return;
 
-    // No inbox connected yet: hand the visitor a ready-to-send message.
-    const body = `${data.get('message')}\n\n${data.get('name')}\n${data.get('email')}`;
-    composed.value = `To: ${email}\nSubject: ${topic} (via your ePortfolio)\n\n${body}`;
-    mailLink.href = `mailto:${email}?subject=${encodeURIComponent(`${topic} (via your ePortfolio)`)}&body=${encodeURIComponent(body)}`;
-    fallback.hidden = false;
-    status.textContent = 'Your message is ready. Copy it below and send it to my email address.';
-    if (lenis) lenis.scrollTo(fallback, { offset: -window.innerHeight * 0.3 });
-    else fallback.scrollIntoView({ block: 'nearest', behavior: reduced ? 'auto' : 'smooth' });
+    // aria-disabled rather than disabled, so keyboard focus stays on the button while sending.
+    form.dataset.sending = '1';
+    button.setAttribute('aria-disabled', 'true');
+    status.textContent = 'Sending your message…';
+    try {
+      // FormSubmit's AJAX endpoint answers 200 with { success: "true" | "false" }.
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ ...Object.fromEntries(data), _subject: subject, _template: 'table' }),
+      });
+      const reply = await res.json().catch(() => ({}));
+      if (!res.ok || String(reply.success) !== 'true') throw new Error(reply.message || String(res.status));
+      status.textContent = `Thanks, ${data.get('name')}. Your message has been sent and I'll reply by email.`;
+      fallback.hidden = true;
+      form.reset();
+    } catch (err) {
+      offerEmail(data, subject, "Your message couldn't be sent from the form just now, so it's ready below: open it in your email app or copy it.");
+    } finally {
+      delete form.dataset.sending;
+      button.removeAttribute('aria-disabled');
+    }
   });
 
   $('#copy-composed')?.addEventListener('click', (e) => copyFrom(composed, e.currentTarget, 'Message copied'));

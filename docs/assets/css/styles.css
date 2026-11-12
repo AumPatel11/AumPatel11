@@ -221,7 +221,7 @@ cite { font-style: italic; }
 .btn--ghost:hover { border-color: var(--ink); }
 .btn .arrow { display: inline-block; transition: transform 0.35s var(--ease-out); }
 .btn:hover .arrow { transform: translateX(3px); }
-.btn:disabled { opacity: 0.6; cursor: progress; }
+.btn:disabled, .btn[aria-disabled="true"] { opacity: 0.6; cursor: progress; }
 
 .icon-btn {
   display: inline-grid; place-items: center;
@@ -691,6 +691,16 @@ cite { font-style: italic; }
 .case + .case { margin-top: clamp(112px, 13vw, 184px); }
 .case__links { margin-top: 8px; }
 
+/* Live links to the work, under the two case studies */
+.live { margin-top: clamp(112px, 13vw, 184px); }
+.live__title { font-size: var(--step-3); font-stretch: 112%; letter-spacing: -0.025em; margin-bottom: 18px; }
+.case-index--live { margin-bottom: 0; }
+@media (min-width: 761px) {
+  /* A fixed link column keeps the three descriptions lined up */
+  .case-index--live a { grid-template-columns: 56px minmax(0, 3fr) minmax(0, 6fr) 12rem; }
+  .case-index--live .case-index__when { text-align: right; }
+}
+
 /* Before / after process diagram */
 .flow-compare { margin: 20px 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .flow { padding: 22px; background: var(--paper-raised); border: 1px solid var(--rule); border-radius: var(--radius-sm); }
@@ -951,6 +961,8 @@ cite { font-style: italic; }
   background: var(--paper-raised); border: 1px solid var(--rule); border-radius: 4px; resize: vertical;
 }
 .form__fallback-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+/* Spam trap: people never see it, bots fill it in and FormSubmit drops the message */
+.form__honey { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
 /* ---------------- footer ---------------- */
 .footer { padding-block: clamp(56px, 8vw, 96px) calc(28px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--rule); overflow: hidden; }
@@ -964,6 +976,9 @@ cite { font-style: italic; }
 .footer__row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--rule); font-size: 0.875rem; color: var(--ink-soft); }
 .footer__coords { color: var(--ink-faint); font-variant-numeric: tabular-nums; }
 .footer__top { text-decoration: none; font-weight: 600; color: var(--ink); }
+.footer__links { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.footer__links a { font-weight: 600; color: var(--ink); text-decoration: none; }
+.footer__links a:hover { text-decoration: underline; text-decoration-color: var(--route); }
 
 /* ---------------- draft helper ---------------- */
 .draft {
