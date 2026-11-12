@@ -12,7 +12,7 @@ A single-page ePortfolio for ICL Graduate Business School, built as a plain stat
 | Project work | `#project`: two case studies in seven steps each, Oven Fresh Bakery (`#case-ovenfresh`) and AussieStitch (`#case-aussiestitch`) |
 | Professional development: PPLG | `#pplg` (personal goals P1–P3, professional goals C1–C3) |
 | Professional development: CV (NZ format) | `#cv` |
-| Reflective learning: five posts + peer evaluation | `#reflections` (cards open in a reader) |
+| Reflective learning: five posts | `#reflections` (cards open in a reader) |
 
 ## Design
 

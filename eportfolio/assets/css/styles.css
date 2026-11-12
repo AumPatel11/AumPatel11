@@ -805,7 +805,10 @@ cite { font-style: italic; }
 .sheet__refs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 32px; font-size: 0.875rem; }
 
 /* ---------------- reflective journal ---------------- */
-.journal { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.journal { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px; }
+/* Five posts: three across, then two wider ones, so no row has a gap. */
+.journal > .entry { grid-column: span 2; }
+.journal > .entry:nth-child(n+4) { grid-column: span 3; }
 .entry {
   position: relative; overflow: hidden; isolation: isolate;
   display: flex; flex-direction: column; gap: 14px;
@@ -984,7 +987,8 @@ cite { font-style: italic; }
   .goals { grid-template-columns: minmax(0, 1fr); }
   .goal__dl { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; }
   .goal__dl > div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
-  .journal { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .journal > .entry, .journal > .entry:nth-child(n+4) { grid-column: span 3; }
+  .journal > .entry:last-child { grid-column: span 6; }
   .case__meta { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .map-label__name { display: none; }
 }
@@ -1050,7 +1054,7 @@ cite { font-style: italic; }
   .pipeline li { grid-template-columns: minmax(0, 1fr); }
   .pipeline__where { grid-column: 1; grid-row: auto; justify-self: start; margin-bottom: 6px; white-space: normal; }
   .goal__dl { grid-template-columns: minmax(0, 1fr); }
-  .journal { grid-template-columns: minmax(0, 1fr); }
+  .journal > .entry, .journal > .entry:nth-child(n+4), .journal > .entry:last-child { grid-column: span 6; }
   .entry { min-height: 300px; }
   .entry__cta { opacity: 1; transform: none; }
   .entry__top .entry__course { opacity: 0; }
