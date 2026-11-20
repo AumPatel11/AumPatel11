@@ -19,6 +19,8 @@ from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
 # Libraries unpacked by ios_install.py (iPhone can't run pip's installers).
 # Appended last so anything the system already has wins.
 if os.path.isdir(os.path.join(ROOT, "vendor")):
@@ -598,6 +600,8 @@ class Handler(SimpleHTTPRequestHandler):
                 return self.send_json({"error": "not found"}, 404)
         except (KeyError, TypeError, ValueError) as e:
             return self.send_json({"error": str(e)}, 400)
+        except Exception as e:  # noqa: BLE001 - always answer the phone
+            return self.send_json({"error": f"{type(e).__name__}: {e}"}, 500)
         return self.send_json(APP.state())
 
     def do_DELETE(self):
@@ -623,11 +627,16 @@ def cloud_devices(b):
     key, secret = (b.get("apiKey") or "").strip(), (b.get("apiSecret") or "").strip()
     if not key or not secret:
         raise ValueError("enter your Access ID and Access Secret")
-    c = tinytuya.Cloud(apiRegion=region, apiKey=key, apiSecret=secret,
-                       configFile=os.path.join(ROOT, "tinytuya-cloud.json"))
-    if c.error:
-        raise ValueError(str(c.error.get("Payload") or c.error))
-    devs = c.getdevices()
+    try:
+        c = tinytuya.Cloud(apiRegion=region, apiKey=key, apiSecret=secret,
+                           configFile=os.path.join(ROOT, "tinytuya-cloud.json"))
+        if c.error:
+            raise ValueError(str(c.error.get("Payload") or c.error))
+        devs = c.getdevices()
+    except ValueError:
+        raise
+    except Exception as e:  # noqa: BLE001 - network problems etc.
+        raise ValueError(f"Couldn't reach Tuya ({type(e).__name__}). Is this phone online?") from e
     if isinstance(devs, dict):
         raise ValueError(str(devs.get("Payload") or devs.get("Error") or devs))
     out = [{"name": d.get("name"), "id": d.get("id"), "key": d.get("key"),
@@ -700,7 +709,12 @@ def main():
     os.chdir(ROOT)
     use_https = "--http" not in sys.argv and ("--https" in sys.argv or APP.config.get("https") or on_iphone())
     ip = lan_ip()
-    srv = Server(("0.0.0.0", port), Handler)
+    try:
+        srv = Server(("0.0.0.0", port), Handler)
+    except OSError:
+        print(f"\n  Port {port} is busy - Lumora is probably already running.")
+        print("  Close the other copy (Ctrl+C there), or open the address it shows.\n")
+        return
     if use_https:
         srv.socket = https_context(ip).wrap_socket(srv.socket, server_side=True,
                                                    do_handshake_on_connect=False)
