@@ -114,11 +114,18 @@ class Light:
                 if isinstance(st, dict) and st.get("Error"):
                     raise RuntimeError(st.get("Error"))
                 self.dev = d
-                self.music_ok = bool(d.bulb_has_capability("music"))
+                self.music_ok = self.has("music")
                 self._read_device_state(st)
             except Exception as e:  # noqa: BLE001
                 self.dev = None
                 self.dev_error = str(e)
+
+    def has(self, feature):
+        # tinytuya raises KeyError for features a strip doesn't list at all
+        try:
+            return bool(self.dev.bulb_has_capability(feature))
+        except Exception:  # noqa: BLE001
+            return False
 
     def close(self):
         if self.dev:
@@ -209,8 +216,13 @@ class Light:
                       temp=clamp(temp, 0, 100), effect=None, on=True)
             self.in_stream_mode = False
             self._update_preview()
-            if self.dev:
+            if not self.dev:
+                return
+            if self.has("white"):
                 self._call(self.dev.set_white_percentage, st["brightness"], st["temp"])
+            else:  # RGB-only strips (no white LEDs): mix the white from RGB
+                r, g, b = (round(c) for c in white_preview(st["brightness"], st["temp"]))
+                self._call(self.dev.set_colour, r, g, b)
 
     def set_brightness(self, brightness):
         st = self.state
@@ -265,7 +277,7 @@ class Light:
             self.in_stream_mode = False
             if not self.dev:
                 return
-            if not self.dev.bulb_has_capability("scene_data"):
+            if not self.has("scene_data"):
                 raise ValueError("This bulb doesn't accept custom scenes - use Effects instead")
             k = st["brightness"] / 100
             dimmed = [effects.rgb_to_hex(effects.scale(effects.hex_to_rgb(c), k)) for c in colors]
