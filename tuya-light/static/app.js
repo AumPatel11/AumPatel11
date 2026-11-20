@@ -68,7 +68,8 @@ function applyState(st) {
     st.mode === "white" ? (st.circadian ? "Circadian white" : "White light") :
     st.mode === "effect" && fx ? `${fx.icon} ${fx.label}` :
     st.mode === "live" ? "🎵 Music sync" :
-    st.mode === "scene" ? "💎 Bulb scene" : "Colour";
+    st.mode === "scene" ? "💎 Bulb scene" :
+    st.mode === "segments" ? "🌈 Segments" : "Colour";
   if (!dragging) {
     const b = Math.round(st.mode === "effect" && st.effect ? st.effect.brightness : st.brightness);
     $("#brightness").value = b; $("#brightnessOut").textContent = b + "%";

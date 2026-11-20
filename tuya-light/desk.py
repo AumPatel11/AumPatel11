@@ -130,7 +130,7 @@ class ScreenSource(threading.Thread):
                     step = max(1, shot.width // 96)
                     img = a[::step, ::step, 2::-1]  # BGRA -> RGB, downsampled
                     self.rgb, self.lum = screen_colour(img)
-                    self.zones = screen_zones(img)
+                    self.zones = screen_zones(img, ZONES)
                     time.sleep(1 / self.fps)
         except Exception as e:  # noqa: BLE001
             self.error = f"screen capture failed: {e}"
@@ -170,19 +170,30 @@ class AudioSource(threading.Thread):
 
 # ------------------------------------------------------------ desk sync
 
+ZONES = 5          # screen slices mapped along the desk
+ZONE_EVERY = 1.5   # seconds between segment refreshes (the strip takes ~2 writes/s)
+
+
+def zones_to_segments(zones, total=20, reverse=False, level=1.0):
+    """Stretch n zone colours (left->right on screen) over `total` segments."""
+    segs = [tuple(c * level for c in zones[i * len(zones) // total]) for i in range(total)]
+    return segs[::-1] if reverse else segs
+
+
 class DeskSync(threading.Thread):
     """Mixes the sources and streams frames to the strip."""
 
-    MODES = ("screen", "music", "both")
+    MODES = ("screen", "zones", "music", "both")
 
-    def __init__(self, engine, mode="screen", fps=15, intensity=1.0, use_mic=False):
+    def __init__(self, engine, mode="screen", fps=15, intensity=1.0, use_mic=False, reverse=False):
         super().__init__(daemon=True)
         self.engine = engine
         self.mode = mode
         self.fps = fps
         self.intensity = intensity
         self.running = True
-        self.screen = ScreenSource(fps=max(fps, 15)) if mode in ("screen", "both") else None
+        self.reverse = reverse
+        self.screen = ScreenSource(fps=max(fps, 15)) if mode in ("screen", "zones", "both") else None
         self.use_mic = use_mic
         self.audio = AudioSource(use_mic) if mode in ("music", "both") else None
         self.hue = 0.0
@@ -233,6 +244,13 @@ class DeskSync(threading.Thread):
         while self.running:
             if self.error():
                 time.sleep(0.5)
+                continue
+            if self.mode == "zones":
+                if self.screen.zones:
+                    level = min(1.0, (0.25 + 0.75 * min(1.0, self.screen.lum * 1.8)) * self.intensity)
+                    self.engine.light.paint_segments(
+                        zones_to_segments(self.screen.zones, reverse=self.reverse, level=level))
+                time.sleep(ZONE_EVERY)
                 continue
             rgb, smooth = self.frame()
             # light smoothing on top of the bulb's own fade keeps colour shifts silky

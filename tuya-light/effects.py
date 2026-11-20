@@ -293,3 +293,36 @@ def scene_preview(t, colors, mode="gradient", speed=50):
     if m == "jump" or len(units) == 1:
         return c0
     return mix(c0, units[(i + 1) % len(units)][0], smooth(pos - int(pos)))
+
+
+# ---- RGBIC segments (DP 61 paint_colour_data, confirmed on a 20-segment strip)
+SEGMENTS = 20
+
+
+def paint_data(rgb, segments=None, total=SEGMENTS):
+    """Base64 DP 61 frame painting `segments` (1-based) one colour; None = whole strip.
+
+    Layout: version 00, mode 01 colour, effect 00, segment total, action
+    (00 bucket / 01 pencil), H S V (2 bytes each, S/V 0-1000), then for
+    pencil 0x80|count + the segment numbers.
+    """
+    import base64
+    h, s, v = colorsys.rgb_to_hsv(*(max(0, min(255, c)) / 255 for c in rgb))
+    hsv_b = (round(h * 360) % 360).to_bytes(2, "big") + round(s * 1000).to_bytes(2, "big") \
+        + max(10, round(v * 1000)).to_bytes(2, "big")
+    if segments is None:
+        raw = bytes([0, 1, 0, total, 0]) + hsv_b
+    else:
+        segs = sorted(set(segments))
+        raw = bytes([0, 1, 0, total, 1]) + hsv_b + bytes([0x80 | len(segs)] + segs)
+    return base64.b64encode(raw).decode()
+
+
+def group_segments(colours):
+    """[rgb per segment] -> {hex: [1-based segment numbers]}, coarsened so
+    tiny shifts don't cost a (slow) write. ponytail: 5-bit quantise, tune if banding shows."""
+    groups = {}
+    for i, c in enumerate(colours, 1):
+        q = rgb_to_hex(tuple(min(255, (int(x) >> 3 << 3) + 4) if x > 6 else 0 for x in c))
+        groups.setdefault(q, []).append(i)
+    return groups

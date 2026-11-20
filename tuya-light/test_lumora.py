@@ -42,6 +42,17 @@ class SceneAndCertTests(unittest.TestCase):
         self.assertEqual(len(effects.scene_data(["#f00", "#0f0"], "breathe")), 4 * 26)
         self.assertEqual(len(effects.scene_data(["#123456"] * 20)), 8 * 26)  # bulb max 8 units
 
+    def test_paint_data_matches_real_strip_echo(self):
+        # echoed by the real 20-segment strip for "segments 1,3,5 blue"
+        self.assertEqual(effects.paint_data((0, 0, 255), [5, 3, 1]), "AAEAFAEA8APoA+iDAQMF")
+        self.assertEqual(effects.paint_data((255, 0, 0)), "AAEAFAAAAAPoA+g=")  # whole strip
+
+    def test_zones_stretch_and_reverse(self):
+        z = desk.zones_to_segments([(1, 0, 0), (2, 0, 0)], total=4)
+        self.assertEqual([c[0] for c in z], [1, 1, 2, 2])
+        z = desk.zones_to_segments([(1, 0, 0), (2, 0, 0)], total=4, reverse=True)
+        self.assertEqual([c[0] for c in z], [2, 2, 1, 1])
+
     def test_self_signed_cert_loads(self):
         import os
         import ssl
@@ -153,13 +164,28 @@ class ApiTests(unittest.TestCase):
             self.assertIn(b"Lumora", r.read())
 
 
+    def test_segments_only_resend_what_changed(self):
+        server.SEG_GAP = 0
+        L = server.APP.light
+        L.set_colour(0.5, 1, 50)
+        self.bulb.calls.clear()
+        red, blue = (255, 0, 0), (0, 0, 255)
+        L.paint_segments([red] * 10 + [blue] * 10)
+        dp61 = lambda: [c for c in self.bulb.calls if c[0] == "set_value" and c[1][0] == 61]
+        self.assertEqual(len(dp61()), 2)
+        L.paint_segments([red] * 10 + [blue] * 10)          # nothing changed
+        self.assertEqual(len(dp61()), 2)
+        L.paint_segments([red] * 10 + [(0, 255, 0)] * 10)   # only the right half
+        self.assertEqual(len(dp61()), 3)
+        self.assertEqual(L.state["mode"], "segments")
+
     def test_desk_mode_and_manual_takeover(self):
         started = []
 
         class Dummy(threading.Thread):
             MODES = desk.DeskSync.MODES
 
-            def __init__(self, engine, mode, intensity=1.0, use_mic=False):
+            def __init__(self, engine, mode, intensity=1.0, use_mic=False, reverse=False):
                 super().__init__(daemon=True)
                 self.mode, self.intensity, self.use_mic, self.running = mode, intensity, use_mic, True
                 started.append(self)

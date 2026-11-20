@@ -37,6 +37,7 @@ except ImportError:  # demo mode still works without it
 STATIC = os.path.join(ROOT, "static")
 CONFIG_PATH = os.path.join(ROOT, "config.json")
 SCENE_SLOT = 10  # custom scene number written to DP 25
+SEG_GAP = 0.45   # seconds between DP 61 segment writes (strip drops faster ones)
 DATA_PATH = os.path.join(ROOT, "data.json")
 WIZARD_PATH = os.path.join(ROOT, "devices.json")
 
@@ -80,6 +81,8 @@ class Light:
         self.in_stream_mode = False
         self.frames = 0
         self.last_drain = 0
+        self.seg_sent = None    # last colour hex per segment actually written
+        self.last_seg = 0.0
         self.state = {
             "on": True,
             "mode": "colour",       # colour | white | effect | live
@@ -135,6 +138,7 @@ class Light:
                 pass
         self.dev = None
         self.in_stream_mode = False
+        self.seg_sent = None
 
     def _read_device_state(self, st):
         try:
@@ -196,6 +200,7 @@ class Light:
         with self.lock:
             self.state["on"] = bool(on)
             self.in_stream_mode = False
+            self.seg_sent = None
             if self.dev:
                 self._call(self.dev.turn_on if on else self.dev.turn_off)
 
@@ -205,6 +210,7 @@ class Light:
             st.update(mode="colour", h=h % 1.0, s=clamp(s, 0, 1),
                       brightness=clamp(brightness, 1, 100), effect=None, on=True)
             self.in_stream_mode = False
+            self.seg_sent = None
             self._update_preview()
             if self.dev:
                 self._call(self.dev.set_hsv, st["h"], st["s"], st["brightness"] / 100)
@@ -215,6 +221,7 @@ class Light:
             st.update(mode="white", brightness=clamp(brightness, 1, 100),
                       temp=clamp(temp, 0, 100), effect=None, on=True)
             self.in_stream_mode = False
+            self.seg_sent = None
             self._update_preview()
             if not self.dev:
                 return
@@ -250,6 +257,7 @@ class Light:
                 r, g, b = max(r, 3), max(g, 3), max(b, 3)
             self.state["preview"] = [round(r), round(g), round(b)]
             self.state["on"] = True
+            self.seg_sent = None
             if not self.dev:
                 return
             d = self.dev
@@ -275,6 +283,7 @@ class Light:
             st.update(mode="scene", on=True, effect=None,
                       scene={"colors": colors, "mode": mode, "speed": speed})
             self.in_stream_mode = False
+            self.seg_sent = None
             if not self.dev:
                 return
             if not self.has("scene_data"):
@@ -282,6 +291,36 @@ class Light:
             k = st["brightness"] / 100
             dimmed = [effects.rgb_to_hex(effects.scale(effects.hex_to_rgb(c), k)) for c in colors]
             self._call(self.dev.set_scene, SCENE_SLOT, effects.scene_data(dimmed, mode, speed))
+
+    def paint_segments(self, colours):
+        """Give each RGBIC segment its own colour (DP 61). colours[0] = segment 1.
+
+        The strip drops writes sent faster than ~2/s and can fall off WiFi if
+        flooded, so: one write per colour group, only groups that changed,
+        spaced SEG_GAP apart. ponytail: blocks the caller ~0.45 s per write.
+        """
+        groups = effects.group_segments(colours)
+        with self.lock:
+            st = self.state
+            st.update(mode="segments", on=True, effect=None,
+                      segments=[effects.rgb_to_hex(c) for c in colours])
+            st["preview"] = [round(sum(c[i] for c in colours) / len(colours)) for i in range(3)]
+            self.in_stream_mode = False
+            if not self.dev:
+                return
+            if self.seg_sent is None:
+                self._call(self.dev.set_value, 21, "colour", nowait=True)
+                self.seg_sent = [None] * len(colours)
+            for hx, segs in groups.items():
+                if all(self.seg_sent[i - 1] == hx for i in segs):
+                    continue
+                time.sleep(max(0, SEG_GAP - (time.time() - self.last_seg)))
+                self._call(self.dev.set_value, 61,
+                           effects.paint_data(effects.hex_to_rgb(hx), segs), nowait=True)
+                self.last_seg = time.time()
+                for i in segs:
+                    self.seg_sent[i - 1] = hx
+            self._drain()
 
     def snapshot(self):
         with self.lock:
@@ -457,8 +496,8 @@ class App:
 
     def start_desk(self, mode, intensity=1.0, mic=False):
         if mode not in desk.DeskSync.MODES:
-            raise ValueError("mode must be off, screen, music or both")
-        miss = desk.missing_deps(mode != "music", mode != "screen")
+            raise ValueError("mode must be off, screen, zones, music or both")
+        miss = desk.missing_deps(mode != "music", mode not in ("screen", "zones"))
         if miss:
             raise ValueError("Desk Sync needs: pip install -r requirements-desk.txt (missing "
                              + ", ".join(miss) + ")")
@@ -469,7 +508,8 @@ class App:
                 d.intensity = intensity  # just a slider move: keep the capture threads
                 return
             self._stop_desk()
-            self.desk = desk.DeskSync(self.engine, mode, intensity=intensity, use_mic=bool(mic))
+            self.desk = desk.DeskSync(self.engine, mode, intensity=intensity, use_mic=bool(mic),
+                                      reverse=bool(self.config.get("segments_reversed")))
             self.desk.start()
 
     def _stop_desk(self):
