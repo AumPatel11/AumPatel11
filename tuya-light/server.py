@@ -681,6 +681,8 @@ class Server(ThreadingHTTPServer):
 
 
 def on_iphone():
+    if APP and APP.config.get("ios"):  # set by ios_install.py
+        return True
     return platform.machine().startswith(("iPhone", "iPad", "iPod"))
 
 
@@ -722,12 +724,18 @@ def main():
     mode = "connected to bulb" if APP.light.dev else ("DEMO mode (no bulb configured)"
                                                      if not APP.light.device_cfg else f"bulb error: {APP.light.dev_error}")
     print(f"\n  Lumora is running - {mode}")
-    print(f"  On this device:      {scheme}://localhost:{port}")
-    print(f"  From another phone:  {scheme}://{ip}:{port}   (same WiFi / hotspot)")
+    if on_iphone():
+        print("\n  On your OTHER iPhone, open Safari and go to:\n")
+        print(f"      {scheme}://{ip}:{port}\n")
+        print("  (Not 'localhost' - that only means the phone you type it on.)")
+        if ip.startswith("127.") or ip == "0.0.0.0":
+            print("  !! This phone has no WiFi address. Join the hotspot, then restart Lumora.")
+        print("  Keep THIS screen open: iPhone pauses Lumora if you leave a-Shell.")
+    else:
+        print(f"  On this device:      {scheme}://localhost:{port}")
+        print(f"  From another phone:  {scheme}://{ip}:{port}   (same WiFi / hotspot)")
     if use_https:
         print("  Safari will warn 'Not Private' - tap Show Details > visit this website.")
-    if on_iphone():
-        print("  Keep this screen open: iPhone pauses Lumora if you leave a-Shell.")
     print()
     try:
         srv.serve_forever()

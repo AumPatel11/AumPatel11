@@ -113,6 +113,7 @@ def main():
         with open(cfg_path) as f:
             cfg = json.load(f)
     cfg.setdefault("https", True)  # Safari needs https for the microphone
+    cfg["ios"] = True
     with open(cfg_path, "w") as f:
         json.dump(cfg, f, indent=2)
 
