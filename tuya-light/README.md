@@ -17,7 +17,11 @@ Lumora controls a Tuya WiFi RGB+CW bulb (it also works for Smart Life, Tuya, Gos
 
 ## 1. Install & run
 
-You need Python 3.9 or newer.
+Lumora must run on a computer **at home, on the same WiFi as the bulb** (Windows, Mac, Linux or a Raspberry Pi). You need Python 3.9 or newer from python.org; on Windows, tick **"Add Python to PATH"** while installing.
+
+**Easiest:** download this folder, then double-click **`start-windows.bat`** (Windows) or run **`./start-mac-linux.sh`** (Mac/Linux). Your browser opens Lumora automatically. Keep the black window open while you use it.
+
+Or by hand:
 
 ```bash
 cd tuya-light
