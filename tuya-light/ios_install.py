@@ -117,9 +117,11 @@ def main():
     with open(cfg_path, "w") as f:
         json.dump(cfg, f, indent=2)
 
-    print("\nDone! Start Lumora with:\n")
+    print("\nDone! Now type:\n")
     print(f"  cd {target}")
-    print("  python3 server.py\n")
+    print("  python3 lumo.py\n")
+    print("lumo.py = control the bulb right here (one iPhone).")
+    print("server.py = web app for a second phone / music sync.\n")
 
 
 if __name__ == "__main__":

@@ -17,7 +17,38 @@ Lumora controls a Tuya WiFi RGB+CW bulb (it also works for Smart Life, Tuya, Gos
 | 📳 **Shake** | Shake your phone for a surprise colour |
 | 📱 **Demo mode** | Try everything with a virtual bulb before you connect the real one |
 
-## 📱 iPhone-only setup (no computer needed)
+## 📱 Just one iPhone (it's also the hotspot)
+
+iOS pauses apps you switch away from, so on a single iPhone Lumora runs **inside a-Shell** as a tap-and-type menu. You don't need a browser.
+
+1. Install **a-Shell** (the full one, not *a-Shell mini*) from the App Store.
+2. Turn on **Personal Hotspot → Maximize Compatibility**, and move the bulb onto the hotspot WiFi in Smart Life.
+3. In a-Shell, paste this one line to install:
+   ```bash
+   python3 -c "import urllib.request as u;exec(u.urlopen('https://raw.githubusercontent.com/AumPatel11/AumPatel11/claude/compassionate-archimedes-ceyhlg/tuya-light/ios_install.py').read())"
+   ```
+4. Start it:
+   ```bash
+   cd ~/Documents/lumora
+   ```
+   ```bash
+   python3 lumo.py
+   ```
+5. Choose **s** for Setup. Paste your Tuya Access ID and Secret (see "Get your key" below), and Lumora finds the bulb on your hotspot by itself.
+
+| Menu | What it does |
+|---|---|
+| 2 Colour | 16 named colours or any `#hex` |
+| 3 White | candle / warm / neutral / day / cool |
+| 4 💎 Bulb scene | Saves a palette **into the bulb** (synthwave, sunset, aurora, diwali, and more, or your own). It keeps animating smoothly after you close a-Shell |
+| 5 Live effect | Aurora, Candle, Fireplace, Storm, Heartbeat… while a-Shell is open |
+| 7 Sleep fade | Dims slowly, then switches off |
+
+Quick commands also work: `python3 lumo.py color purple`, `python3 lumo.py scene diwali breathe 60`, `python3 lumo.py white warm 40`, `python3 lumo.py off`.
+
+Music sync needs the browser version, which needs a second phone (below).
+
+## 📱📱 Two iPhones (hub + remote, with music sync)
 
 You need **two iPhones**. The spare one becomes the **light hub**, and your main phone is the **remote** (with mic music sync).
 
