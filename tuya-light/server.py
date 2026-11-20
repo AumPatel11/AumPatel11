@@ -37,6 +37,7 @@ except ImportError:  # demo mode still works without it
 STATIC = os.path.join(ROOT, "static")
 CONFIG_PATH = os.path.join(ROOT, "config.json")
 SCENE_SLOT = 10  # custom scene number written to DP 25
+STREAM_GAP = 0.1  # min seconds between DP 24 live frames (no music DP)
 SEG_GAP = 0.45   # seconds between DP 61 segment writes (strip drops faster ones)
 DATA_PATH = os.path.join(ROOT, "data.json")
 WIZARD_PATH = os.path.join(ROOT, "devices.json")
@@ -83,6 +84,7 @@ class Light:
         self.last_drain = 0
         self.seg_sent = None    # last colour hex per segment actually written
         self.rgbic = False
+        self.last_frame = 0.0
         self.last_seg = 0.0
         self.state = {
             "on": True,
@@ -121,6 +123,10 @@ class Light:
                 self.music_ok = self.has("music")
                 # light_length / light_pixel / lightpixel_number_set only exist on RGBIC strips
                 self.rgbic = bool({"46", "47", "53"} & set((st.get("dps") or {})))
+                if self.rgbic:
+                    # in music mode these strips run their own built-in mic effect
+                    # and ignore DP 27 frames (seen on the real strip), so stream DP 24
+                    self.music_ok = False
                 self._read_device_state(st)
             except Exception as e:  # noqa: BLE001
                 self.dev = None
@@ -271,6 +277,10 @@ class Light:
                 tr = d.MUSIC_TRANSITION_FADE if smooth else d.MUSIC_TRANSITION_JUMP
                 self._call(d.set_music_colour, tr, r, g, b, nowait=True)
             else:
+                # plain colour frames: cap the rate so the strip doesn't drop or choke
+                if time.time() - self.last_frame < STREAM_GAP:
+                    return
+                self.last_frame = time.time()
                 self._call(d.set_colour, r, g, b, nowait=True)
             self.frames += 1
             now = time.time()

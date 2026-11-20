@@ -161,6 +161,18 @@ class ApiTests(unittest.TestCase):
         trans = [c[1][0] for c in self.bulb.calls if c[0] == "set_music_colour"]
         self.assertEqual(trans, [1, 0])
 
+    def test_no_music_dp_streams_rate_capped_colour(self):
+        L = server.APP.light
+        L.music_ok = False
+        try:
+            self.bulb.calls.clear()
+            for _ in range(5):  # a burst inside one STREAM_GAP
+                L.stream((0, 255, 0))
+            self.assertEqual([c[0] for c in self.bulb.calls].count("set_colour"), 1)
+            self.assertNotIn("set_music_colour", [c[0] for c in self.bulb.calls])
+        finally:
+            L.music_ok = True
+
     def test_rgbic_scene_goes_to_dp51(self):
         L = server.APP.light
         L.rgbic = True
