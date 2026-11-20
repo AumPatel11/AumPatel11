@@ -7,7 +7,10 @@ Works in demo mode (virtual bulb) until you add your bulb in Settings.
 import colorsys
 import json
 import os
+import platform
 import socket
+import ssl
+import sys
 import threading
 import time
 import uuid
@@ -15,16 +18,22 @@ from datetime import datetime
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
-import effects
+ROOT = os.path.dirname(os.path.abspath(__file__))
+# Libraries unpacked by ios_install.py (iPhone can't run pip's installers).
+# Appended last so anything the system already has wins.
+if os.path.isdir(os.path.join(ROOT, "vendor")):
+    sys.path.append(os.path.join(ROOT, "vendor"))
+
+import effects  # noqa: E402
 
 try:
     import tinytuya
 except ImportError:  # demo mode still works without it
     tinytuya = None
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
 STATIC = os.path.join(ROOT, "static")
 CONFIG_PATH = os.path.join(ROOT, "config.json")
+SCENE_SLOT = 10  # custom scene number written to DP 25
 DATA_PATH = os.path.join(ROOT, "data.json")
 WIZARD_PATH = os.path.join(ROOT, "devices.json")
 
@@ -76,6 +85,7 @@ class Light:
             "temp": 40,             # 0 warm .. 100 cool
             "effect": None,         # {id, speed, colors, brightness}
             "circadian": False,
+            "scene": None,          # native bulb scene {colors, mode, speed}
             "preview": [255, 60, 170],
         }
 
@@ -208,9 +218,17 @@ class Light:
         elif st["mode"] == "effect" and st["effect"]:
             st["effect"]["brightness"] = clamp(brightness, 1, 100)
             st["brightness"] = clamp(brightness, 1, 100)
+        elif st["mode"] == "scene" and st["scene"]:
+            st["brightness"] = clamp(brightness, 1, 100)
+            sc = st["scene"]
+            self.native_scene(sc["colors"], sc["mode"], sc["speed"])
 
-    def stream(self, rgb):
-        """Fast fire-and-forget frame (effects, music sync)."""
+    def stream(self, rgb, smooth=True):
+        """Fast fire-and-forget frame (effects, music sync).
+
+        smooth=True asks the bulb to fade into the new colour itself, which
+        hides the gaps between frames and makes effects look seamless.
+        """
         with self.lock:
             r, g, b = (clamp(c, 0, 255) for c in rgb)
             if max(r, g, b) < 3:  # Tuya rejects V=0; keep a faint glow
@@ -224,7 +242,8 @@ class Light:
                 if not self.in_stream_mode:
                     self._call(d.set_mode, "music")
                     self.in_stream_mode = True
-                self._call(d.set_music_colour, d.MUSIC_TRANSITION_JUMP, r, g, b, nowait=True)
+                tr = d.MUSIC_TRANSITION_FADE if smooth else d.MUSIC_TRANSITION_JUMP
+                self._call(d.set_music_colour, tr, r, g, b, nowait=True)
             else:
                 self._call(d.set_colour, r, g, b, nowait=True)
             self.frames += 1
@@ -232,6 +251,22 @@ class Light:
             if now - self.last_drain > 1.5:
                 self.last_drain = now
                 self._drain()
+
+    def native_scene(self, colors, mode, speed):
+        """Store an animated scene in the bulb. It then runs on its own,
+        perfectly smooth, even with every phone asleep."""
+        with self.lock:
+            st = self.state
+            st.update(mode="scene", on=True, effect=None,
+                      scene={"colors": colors, "mode": mode, "speed": speed})
+            self.in_stream_mode = False
+            if not self.dev:
+                return
+            if not self.dev.bulb_has_capability("scene_data"):
+                raise ValueError("This bulb doesn't accept custom scenes - use Effects instead")
+            k = st["brightness"] / 100
+            dimmed = [effects.rgb_to_hex(effects.scale(effects.hex_to_rgb(c), k)) for c in colors]
+            self._call(self.dev.set_scene, SCENE_SLOT, effects.scene_data(dimmed, mode, speed))
 
     def snapshot(self):
         with self.lock:
@@ -286,12 +321,12 @@ class Engine(threading.Thread):
                     if v is not None:
                         e[k] = v
 
-    def live(self, rgb):
+    def live(self, rgb, smooth=True):
         with self.light.lock:
             self.light.state["mode"] = "live"
             self.light.state["effect"] = None
             self.last_live = time.time()
-        self.light.stream(rgb)
+        self.light.stream(rgb, smooth)
 
     def start_sleep(self, minutes):
         if minutes <= 0:
@@ -330,8 +365,16 @@ class Engine(threading.Thread):
             params = {"colors": e.get("colors"), "duration": e.get("duration", 900)}
             k = e.get("brightness", 100) / 100 * dim
             rgb = effects.render(e["id"], self.effect_clock, params, self.effect_state, k)
-            light.stream(rgb)
+            light.stream(rgb, smooth=e["id"] not in effects.HARD_EFFECTS)
             time.sleep(1 / self.fps)
+            return
+
+        if st["mode"] == "scene" and st.get("scene"):
+            sc = st["scene"]
+            self.effect_clock += dt
+            rgb = effects.scene_preview(self.effect_clock, sc["colors"], sc["mode"], sc["speed"])
+            st["preview"] = [round(c * st["brightness"] / 100) for c in rgb]
+            time.sleep(0.1)
             return
 
         if st["mode"] == "white" and st.get("circadian") and now - self.last_circadian > 60:
@@ -510,13 +553,21 @@ class Handler(SimpleHTTPRequestHandler):
                 else:
                     E.update_effect(speed=b.get("speed"), colors=b.get("colors"), brightness=b.get("brightness"))
             elif path == "/api/live":
-                E.live((float(b["r"]), float(b["g"]), float(b["b"])))
+                E.live((float(b["r"]), float(b["g"]), float(b["b"])), bool(b.get("smooth", True)))
                 return self.send_json({"ok": True})
+            elif path == "/api/cloud-devices":
+                return self.send_json(cloud_devices(b))
+            elif path == "/api/scene":
+                cols = [c for c in (b.get("colors") or []) if isinstance(c, str)][:8]
+                if not cols:
+                    raise ValueError("pick at least one colour")
+                mode = b.get("mode") if b.get("mode") in ("gradient", "jump", "breathe") else "gradient"
+                L.native_scene(cols, mode, int(b.get("speed", 50)))
             elif path == "/api/sleep":
                 E.start_sleep(float(b.get("minutes", 0)))
             elif path == "/api/presets":
                 p = {"id": uuid.uuid4().hex[:8], "name": (b.get("name") or "Preset")[:40],
-                     "state": {k: L.state[k] for k in ("mode", "h", "s", "brightness", "temp", "effect", "preview")}}
+                     "state": {k: L.state[k] for k in ("mode", "h", "s", "brightness", "temp", "effect", "scene", "preview")}}
                 APP.data["presets"].append(p)
                 APP.save_data()
                 return self.send_json(p)
@@ -564,10 +615,35 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_json({"error": "not found"}, HTTPStatus.NOT_FOUND)
 
 
+def cloud_devices(b):
+    """Fetch device IDs + local keys from the Tuya IoT cloud (one time)."""
+    if tinytuya is None:
+        raise ValueError("tinytuya not installed")
+    region = (b.get("region") or "us").strip()
+    key, secret = (b.get("apiKey") or "").strip(), (b.get("apiSecret") or "").strip()
+    if not key or not secret:
+        raise ValueError("enter your Access ID and Access Secret")
+    c = tinytuya.Cloud(apiRegion=region, apiKey=key, apiSecret=secret,
+                       configFile=os.path.join(ROOT, "tinytuya-cloud.json"))
+    if c.error:
+        raise ValueError(str(c.error.get("Payload") or c.error))
+    devs = c.getdevices()
+    if isinstance(devs, dict):
+        raise ValueError(str(devs.get("Payload") or devs.get("Error") or devs))
+    out = [{"name": d.get("name"), "id": d.get("id"), "key": d.get("key"),
+            "ip": d.get("ip", ""), "version": d.get("version", "3.3")}
+           for d in devs if d.get("id") and d.get("key")]
+    save_json(WIZARD_PATH, out)
+    return out
+
+
 def apply_preset(s):
     L, E = APP.light, APP.engine
     if s.get("mode") == "white":
         L.set_white(s["brightness"], s["temp"])
+    elif s.get("mode") == "scene" and s.get("scene"):
+        sc = s["scene"]
+        L.native_scene(sc["colors"], sc["mode"], sc["speed"])
     elif s.get("mode") == "effect" and s.get("effect"):
         e = s["effect"]
         E.start_effect(e["id"], e.get("speed", 1), e.get("colors"), e.get("brightness"))
@@ -584,17 +660,61 @@ def lan_ip():
         return "127.0.0.1"
 
 
+class Server(ThreadingHTTPServer):
+    daemon_threads = True
+
+    def handle_error(self, request, client_address):
+        # dropped connections / rejected certificates are normal on phones
+        err = sys.exc_info()[1]
+        if isinstance(err, (ssl.SSLError, ConnectionError, TimeoutError, OSError)):
+            return
+        super().handle_error(request, client_address)
+
+
+def on_iphone():
+    return platform.machine().startswith(("iPhone", "iPad", "iPod"))
+
+
+def https_context(ip):
+    """Self-signed certificate so Safari allows the microphone (music sync)."""
+    import certgen
+    cert, key = os.path.join(ROOT, "cert.pem"), os.path.join(ROOT, "key.pem")
+    stamp = os.path.join(ROOT, "cert.ip")
+    if not (os.path.exists(cert) and os.path.exists(key)) or load_json(stamp, None) != ip:
+        print("  Creating HTTPS certificate (one time, a few seconds)...")
+        c, k = certgen.make_self_signed(ips=sorted({"127.0.0.1", ip}))
+        with open(cert, "w") as f:
+            f.write(c)
+        with open(key, "w") as f:
+            f.write(k)
+        save_json(stamp, ip)
+    ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    ctx.load_cert_chain(cert, key)
+    return ctx
+
+
 def main():
     global APP
     APP = App()
     port = int(os.environ.get("PORT") or APP.config.get("port") or 8787)
-    srv = ThreadingHTTPServer(("0.0.0.0", port), Handler)
-    srv.daemon_threads = True
+    os.chdir(ROOT)
+    use_https = "--http" not in sys.argv and ("--https" in sys.argv or APP.config.get("https") or on_iphone())
+    ip = lan_ip()
+    srv = Server(("0.0.0.0", port), Handler)
+    if use_https:
+        srv.socket = https_context(ip).wrap_socket(srv.socket, server_side=True,
+                                                   do_handshake_on_connect=False)
+    scheme = "https" if use_https else "http"
     mode = "connected to bulb" if APP.light.dev else ("DEMO mode (no bulb configured)"
                                                      if not APP.light.device_cfg else f"bulb error: {APP.light.dev_error}")
     print(f"\n  Lumora is running - {mode}")
-    print(f"  This computer:  http://localhost:{port}")
-    print(f"  Your phone:     http://{lan_ip()}:{port}  (same WiFi)\n")
+    print(f"  On this device:      {scheme}://localhost:{port}")
+    print(f"  From another phone:  {scheme}://{ip}:{port}   (same WiFi / hotspot)")
+    if use_https:
+        print("  Safari will warn 'Not Private' - tap Show Details > visit this website.")
+    if on_iphone():
+        print("  Keep this screen open: iPhone pauses Lumora if you leave a-Shell.")
+    print()
     try:
         srv.serve_forever()
     except KeyboardInterrupt:

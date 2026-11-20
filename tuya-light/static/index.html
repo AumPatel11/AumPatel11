@@ -7,6 +7,11 @@
 <title>Lumora</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lumora">
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
@@ -50,6 +55,7 @@
       <input id="hexInput" class="input mono" maxlength="7" value="#ff3cac" aria-label="Hex colour">
       <input id="nativeColour" type="color" value="#ff3cac" aria-label="Pick colour">
     </div>
+    <button id="shakeBtn" class="chip shake">📳 Shake phone for a surprise colour: off</button>
     <h3>Colour harmony</h3>
     <p class="hint">Tap a harmony to send it as a living gradient.</p>
     <div id="harmonies" class="harmonies"></div>
@@ -80,6 +86,19 @@
         <div id="paletteIdeas" class="row gap wrap"></div>
       </div>
     </div>
+
+    <div class="card">
+      <b>💎 Save into the bulb</b>
+      <p class="hint">Stores your palette as a scene inside the bulb itself. The bulb animates it on its own, perfectly smooth, even with both phones asleep or Lumora closed.</p>
+      <div class="seg" id="sceneMode">
+        <button data-v="gradient" class="on">Smooth fade</button>
+        <button data-v="breathe">Breathe</button>
+        <button data-v="jump">Jump</button>
+      </div>
+      <label class="slider-row"><span>Speed</span><input id="sceneSpeed" type="range" min="1" max="100" value="45"><output id="sceneSpeedOut">45</output></label>
+      <div id="scenePalette" class="palette-strip"></div>
+      <button id="sceneSend" class="btn big">Send palette to bulb</button>
+    </div>
   </section>
 
   <!-- MUSIC -->
@@ -92,7 +111,8 @@
     </div>
     <label class="slider-row"><span>Gain</span><input id="gain" type="range" min="20" max="400" value="140"><output id="gainOut">1.4×</output></label>
     <button id="micBtn" class="btn big">🎤 Start music sync</button>
-    <p class="hint" id="micHint">Uses your microphone to react to whatever is playing in the room. On a phone, the mic only works over https or on the computer running Lumora (localhost).</p>
+    <label class="toggle"><input id="smoothMusic" type="checkbox" checked><span>Silky mode: the bulb fades between beats instead of snapping</span></label>
+    <p class="hint" id="micHint">Listens to whatever is playing in the room. The screen stays awake while music sync runs. Keep this page open.</p>
   </section>
 
   <!-- PHOTO -->
@@ -129,7 +149,20 @@
   <!-- SETUP -->
   <section class="panel" data-tab="setup" hidden>
     <div class="card">
-      <h3>Your bulb</h3>
+      <h3>Step 1 · Get your bulb's key from Tuya</h3>
+      <p class="hint">One time only. Make a free project at iot.tuya.com and link your Smart Life app (README step 2), then paste the project's keys here.</p>
+      <label class="field">Data centre
+        <select id="cloudRegion" class="input">
+          <option value="in">India</option><option value="us">Americas (West)</option><option value="us-e">Americas (East)</option>
+          <option value="eu">Central Europe</option><option value="eu-w">Western Europe</option><option value="sg">Singapore</option><option value="cn">China</option>
+        </select></label>
+      <label class="field">Access ID / Client ID<input id="cloudKey" class="input mono" autocomplete="off"></label>
+      <label class="field">Access Secret / Client Secret<input id="cloudSecret" class="input mono" type="password" autocomplete="off"></label>
+      <button id="cloudFetch" class="btn">Get my bulbs</button>
+      <div id="cloudMsg" class="hint"></div>
+    </div>
+    <div class="card">
+      <h3>Step 2 · Your bulb</h3>
       <p class="hint">Needs the bulb's <b>Device ID</b> and <b>Local Key</b>. See the README for the 5-minute way to get them.</p>
       <div id="wizardList"></div>
       <label class="field">Device ID<input id="cfgId" class="input mono" autocomplete="off"></label>

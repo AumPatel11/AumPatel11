@@ -1,6 +1,6 @@
 # Lumora: your own app for Tuya RGBCW smart bulbs
 
-Lumora controls a Tuya WiFi RGB+CW bulb (it also works for Smart Life, Tuya, Gosund, Teckin and other "Tuya-inside" bulbs) **directly over your home WiFi**. It doesn't talk to the cloud while it runs and has no lag. It runs on your computer, and you open it on any phone or laptop on the same WiFi.
+Lumora controls a Tuya WiFi RGB+CW bulb (it also works for Smart Life, Tuya, Gosund, Teckin and other "Tuya-inside" bulbs) **directly over your home WiFi**. It doesn't talk to the cloud while it runs and has no lag. It runs on a spare iPhone or a computer, and you control it from any phone on the same WiFi or hotspot.
 
 ## What it can do
 
@@ -13,9 +13,58 @@ Lumora controls a Tuya WiFi RGB+CW bulb (it also works for Smart Life, Tuya, Gos
 | 🖼 **Photo mood** | Pick a photo and Lumora pulls out its palette and plays it on the bulb. Tap the photo to grab an exact colour |
 | ⏰ **Timers** | A sleep fade that dims slowly and then switches off, and a **sunrise wake-up alarm** (deep red → warm white) |
 | ⭐ **Presets** | Save any look, including effects with your palette, and get it back with one tap |
+| 💎 **Save into bulb** | Stores your palette as a scene **inside the bulb**, so it animates perfectly smoothly on its own, even with every phone asleep |
+| 📳 **Shake** | Shake your phone for a surprise colour |
 | 📱 **Demo mode** | Try everything with a virtual bulb before you connect the real one |
 
-## 1. Install & run
+## 📱 iPhone-only setup (no computer needed)
+
+You need **two iPhones**. The spare one becomes the **light hub**, and your main phone is the **remote** (with mic music sync).
+
+```
+ Main iPhone (hotspot + remote, Safari)  ──WiFi hotspot──  Bulb
+                     │                                       │
+                     └──────────── Spare iPhone (hub) ───────┘
+                                   runs Lumora in a-Shell
+```
+
+**On both phones:** the bulb and the spare iPhone must join the main iPhone's hotspot. In the Smart Life app, set the bulb's WiFi to the hotspot (re-pair it if needed). On the main iPhone, turn on **Settings → Personal Hotspot → Maximize Compatibility**, because most bulbs only speak 2.4 GHz.
+
+**On the spare iPhone (the hub):**
+
+1. Install **a-Shell** (free, App Store).
+2. In a-Shell, type these two lines (they download and install Lumora):
+   ```bash
+   curl -L https://raw.githubusercontent.com/AumPatel11/AumPatel11/claude/compassionate-archimedes-ceyhlg/tuya-light/ios_install.py -o install.py
+   ```
+   ```bash
+   python3 install.py
+   ```
+3. Start it:
+   ```bash
+   cd ~/Documents/lumora
+   ```
+   ```bash
+   python3 server.py
+   ```
+   If iOS asks to allow a-Shell to find devices on your **local network**, tap **Allow**.
+4. **Leave a-Shell open on screen.** iPhones pause apps you switch away from. Plug the phone in and set *Settings → Display → Auto-Lock → Never* while it's acting as the hub.
+
+**On the main iPhone (the remote):**
+
+1. In Safari, open the `https://172.20.10.x:8787` address that a-Shell printed.
+2. Safari says *"This Connection Is Not Private"*. That's expected, because Lumora made its own certificate. Tap **Show Details → visit this website → Visit Website**.
+3. Tap **Share → Add to Home Screen** so Lumora opens like a normal app.
+4. In **Setup**, use *Step 1* to fetch your bulb's key from Tuya (see "Get your key" below), tap your bulb, then tap **Connect**.
+
+The `https` matters because iPhone Safari only allows the **microphone** (music sync) and **shake** on secure pages.
+
+**Tips for seamless light:**
+- **💎 Save into the bulb** (Effects tab) is the smoothest option. The bulb animates the scene itself, so the hub can even sleep.
+- Live effects and music sync use the bulb's fade transition, so it blends between frames. Turn off *Silky mode* on the Music tab for snappier beats.
+- To update Lumora later, run `python3 install.py` again. Your bulb settings and presets are kept.
+
+## 💻 Computer setup (Windows / Mac / Linux / Raspberry Pi)
 
 Lumora must run on a computer **at home, on the same WiFi as the bulb** (Windows, Mac, Linux or a Raspberry Pi). You need Python 3.9 or newer from python.org; on Windows, tick **"Add Python to PATH"** while installing.
 
@@ -37,9 +86,17 @@ python server.py
 
 Open **http://localhost:8787**. The terminal also prints a link for your phone.
 
-## 2. Get your bulb's Device ID and Local Key (one time, ~5 min)
+## Get your key: the bulb's Device ID and Local Key (one time, ~10 min)
 
-Tuya bulbs encrypt local traffic with a per-device **Local Key**, so you need to get it once:
+Tuya bulbs encrypt local traffic with a per-device **Local Key**, so you need to get it once.
+
+**Easy way (works on iPhone):**
+1. On iot.tuya.com, sign up for free and go to **Cloud → Development → Create Cloud Project**. Pick **Smart Home** and your data centre (India users: *India*).
+2. Open the project, go to **Devices → Link App Account → Add App Account**, and scan the QR code with **Smart Life → Me → scan icon** (top right).
+3. Copy the project's **Access ID** and **Access Secret** from the *Overview* tab.
+4. In Lumora's **Setup → Step 1**, pick the same data centre, paste both values and tap **Get my bulbs**. Tap your bulb, then tap **Connect**.
+
+**Terminal way (computer):**
 
 1. Set the bulb up in the **Smart Life** or **Tuya Smart** app as usual. Make sure it works over WiFi, not only Bluetooth.
 2. Create a free account at **iot.tuya.com**. Then go to *Cloud → Create Cloud Project* and pick your region's data centre. Under *Devices → Link App Account*, scan the QR code with the Smart Life app.
@@ -52,7 +109,7 @@ Tuya bulbs encrypt local traffic with a per-device **Local Key**, so you need to
 
 Tips:
 - Leave IP blank to auto-find, or press **Scan WiFi**.
-- If it won't connect, try protocol version **3.4** or **3.5** (newer bulbs).
+- If it won't connect, try protocol version **3.4** or **3.5** (newer bulbs). On iPhone, versions 3.1–3.4 work. Version 3.5 needs a crypto library that iPhones can't install.
 - Close the Smart Life app on your phone. Some bulbs only accept one local connection at a time.
 - Re-pairing the bulb in Smart Life changes its Local Key, so you'll need to run the wizard again.
 
@@ -63,7 +120,7 @@ Your bulb has both WiFi and Bluetooth. Tuya's Bluetooth mode uses a different en
 ## Notes
 
 - Effects and music sync use the bulb's real-time "music" channel, sending about 12 frames per second (you can change this in Setup). If your bulb flickers or lags, lower the FPS.
-- The microphone works in the browser on the computer running Lumora (`localhost`). Phones only allow mic access over https.
+- The microphone needs https on phones. On iPhone Lumora uses https automatically; on a computer, start it with `python server.py --https`.
 - Keep `server.py` running for effects, timers and alarms. A Raspberry Pi or an always-on PC is a good home for it.
 - `config.json`, `devices.json` and `data.json` hold your key and settings, and they are git-ignored.
 

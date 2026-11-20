@@ -51,7 +51,13 @@ let dragging = false;
 function applyState(st) {
   S = st;
   const rgb = st.preview || [255, 255, 255];
-  document.documentElement.style.setProperty("--glow", `rgb(${rgb.join(",")})`);
+  // Accent = full-brightness version of the colour (keeps buttons readable);
+  // the bulb alone shows how bright the light really is.
+  const mx = Math.max(...rgb);
+  if (mx > 6) applyState.accent = rgb.map((c) => Math.round((c * 255) / mx));
+  const accent = applyState.accent || [255, 60, 170];
+  document.documentElement.style.setProperty("--glow", `rgb(${accent.join(",")})`);
+  $("#bulb").style.filter = `brightness(${(0.25 + 0.75 * mx / 255).toFixed(2)})`;
   document.body.classList.toggle("off", !st.on);
   const pill = $("#status");
   if (st.demo) { pill.textContent = "Demo mode"; pill.className = "pill demo"; }
@@ -61,7 +67,8 @@ function applyState(st) {
   $("#modeLabel").textContent = !st.on ? "Off" :
     st.mode === "white" ? (st.circadian ? "Circadian white" : "White light") :
     st.mode === "effect" && fx ? `${fx.icon} ${fx.label}` :
-    st.mode === "live" ? "🎵 Music sync" : "Colour";
+    st.mode === "live" ? "🎵 Music sync" :
+    st.mode === "scene" ? "💎 Bulb scene" : "Colour";
   if (!dragging) {
     const b = Math.round(st.mode === "effect" && st.effect ? st.effect.brightness : st.brightness);
     $("#brightness").value = b; $("#brightnessOut").textContent = b + "%";
@@ -221,6 +228,7 @@ function renderPalette() {
     $("button", d).onclick = () => { if (palette.length > 1) { palette.splice(i, 1); renderPalette(); pushPalette(); } };
     box.append(d);
   });
+  $("#scenePalette").style.background = `linear-gradient(90deg,${palette.length > 1 ? palette.join(",") : palette[0] + "," + palette[0]})`;
   try { localStorage.setItem("lumora.palette", JSON.stringify(palette)); } catch {}
 }
 try { const p = JSON.parse(localStorage.getItem("lumora.palette")); if (Array.isArray(p) && p.length) palette = p; } catch {}
@@ -230,6 +238,37 @@ $("#speed").addEventListener("input", throttle((e) => {
   api("/api/effect", { speed: v }).catch(() => {});
 }, 150));
 $("#effectStop").onclick = () => api("/api/colour", { h: currentHS.h, s: currentHS.s, brightness: +$("#brightness").value }).then(applyState);
+
+// ---------- native bulb scene
+let sceneMode = "gradient";
+$$("#sceneMode button").forEach((b) => b.onclick = () => {
+  sceneMode = b.dataset.v; $$("#sceneMode button").forEach((x) => x.classList.toggle("on", x === b));
+});
+$("#sceneSpeed").oninput = (e) => ($("#sceneSpeedOut").textContent = e.target.value);
+$("#sceneSend").onclick = () => api("/api/scene", { colors: palette, mode: sceneMode, speed: +$("#sceneSpeed").value })
+  .then((st) => { applyState(st); toast("Saved into the bulb 💎"); }).catch((e) => toast(e.message));
+
+// ---------- shake for a surprise colour
+let shakeOn = false, lastShake = 0;
+function onMotion(e) {
+  const a = e.accelerationIncludingGravity || e.acceleration; if (!a) return;
+  const force = Math.abs(a.x || 0) + Math.abs(a.y || 0) + Math.abs(a.z || 0);
+  if (force > 32 && Date.now() - lastShake > 900) {
+    lastShake = Date.now();
+    currentHS = { h: Math.random(), s: 0.75 + Math.random() * 0.25 }; placeKnob(); sendColour();
+    if (navigator.vibrate) navigator.vibrate(30);
+  }
+}
+$("#shakeBtn").onclick = async () => {
+  if (!shakeOn && typeof DeviceMotionEvent !== "undefined" && DeviceMotionEvent.requestPermission) {
+    try { if ((await DeviceMotionEvent.requestPermission()) !== "granted") { toast("Motion access was denied"); return; } }
+    catch { toast("Motion needs https"); return; }
+  }
+  shakeOn = !shakeOn;
+  if (shakeOn) window.addEventListener("devicemotion", onMotion);
+  else window.removeEventListener("devicemotion", onMotion);
+  $("#shakeBtn").textContent = `📳 Shake phone for a surprise colour: ${shakeOn ? "ON" : "off"}`;
+};
 
 // ---------- music sync
 let audio = null;
@@ -245,13 +284,17 @@ $("#micBtn").onclick = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
     const ctx = new AudioContext(), src = ctx.createMediaStreamSource(stream), an = ctx.createAnalyser();
     an.fftSize = 1024; an.smoothingTimeConstant = 0.6; src.connect(an);
-    audio = { ctx, stream, an, buf: new Uint8Array(an.frequencyBinCount), hue: Math.random(), avg: 0, lastSend: 0, beatHue: 0, level: 0 };
+    if (ctx.state === "suspended") await ctx.resume();
+    let wake = null; try { wake = await navigator.wakeLock?.request("screen"); } catch {}
+    audio = { wake, ctx, stream, an, buf: new Uint8Array(an.frequencyBinCount), hue: Math.random(), avg: 0, lastSend: 0, beatHue: 0, level: 0 };
     $("#micBtn").textContent = "⏹ Stop music sync";
     musicLoop();
   } catch (e) { toast("Mic blocked: " + e.message); }
 };
 function stopMusic() {
-  audio.stream.getTracks().forEach((t) => t.stop()); audio.ctx.close(); audio = null;
+  audio.stream.getTracks().forEach((t) => t.stop()); audio.ctx.close();
+  try { audio.wake?.release(); } catch {}
+  audio = null;
   $("#micBtn").textContent = "🎤 Start music sync";
 }
 function musicLoop() {
@@ -282,7 +325,7 @@ function musicLoop() {
   }
   drawViz(buf, rgb);
   const now = performance.now();
-  if (now - audio.lastSend > 80) { audio.lastSend = now; api("/api/live", { r: rgb[0], g: rgb[1], b: rgb[2] }).catch(() => {}); }
+  if (now - audio.lastSend > 80) { audio.lastSend = now; api("/api/live", { r: rgb[0], g: rgb[1], b: rgb[2], smooth: $("#smoothMusic").checked && musicStyle !== "beat" }).catch(() => {}); }
 }
 function drawViz(buf, rgb) {
   const c = $("#viz"), x = c.getContext("2d"), w = c.width, h = c.height, bars = 48;
@@ -387,6 +430,16 @@ $("#savePreset").onclick = async () => {
 };
 
 // ---------- setup
+try { $("#cloudRegion").value = localStorage.getItem("lumora.region") || "in"; } catch {}
+$("#cloudFetch").onclick = async () => {
+  $("#cloudMsg").textContent = "Asking Tuya for your devices…";
+  try { localStorage.setItem("lumora.region", $("#cloudRegion").value); } catch {}
+  try {
+    const list = await api("/api/cloud-devices", { region: $("#cloudRegion").value, apiKey: $("#cloudKey").value, apiSecret: $("#cloudSecret").value });
+    $("#cloudMsg").textContent = list.length ? `✅ Found ${list.length} device(s). Tap your bulb below, then Connect.` : "No devices found. Did you link your Smart Life app to the project?";
+    loadConfig();
+  } catch (e) { $("#cloudMsg").textContent = "❌ " + e.message; }
+};
 async function loadConfig() {
   const c = await api("/api/config"), d = c.device || {};
   $("#cfgId").value = d.id || ""; $("#cfgKey").value = d.key || ""; $("#cfgIp").value = d.ip || "";

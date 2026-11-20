@@ -144,3 +144,7 @@ input[type=color] { width: 44px; height: 40px; border: 0; background: none; padd
   .bulb { width: 96px; height: 96px; }
   .mode-label { font-size: 19px; }
 }
+
+.shake { display: block; margin: 14px auto 0; }
+.palette-strip { height: 14px; border-radius: 99px; margin: 8px 0 4px; }
+.card > h3:first-child { margin-top: 0; }

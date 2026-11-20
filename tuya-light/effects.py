@@ -248,3 +248,48 @@ def circadian_brightness(hour):
     if hour < 19:
         return 100
     return round(lerp(100, 35, (hour - 19) / 4))
+
+
+# Effects with hard cuts are sent with the bulb's "jump" transition;
+# everything else uses "fade" so the bulb blends between frames itself.
+HARD_EFFECTS = {"police", "strobe", "party", "storm", "heartbeat"}
+
+
+def scene_units(colors, mode="gradient"):
+    """Expand a palette into native scene units (list of (rgb, change_mode))."""
+    cols = [hex_to_rgb(c) for c in colors if isinstance(c, str)][:8] or [(255, 0, 128)]
+    if mode == "breathe":
+        units = []
+        for c in cols[:4]:
+            units += [(c, "gradient"), (scale(c, 0.06), "gradient")]
+        return units
+    return [(c, mode if mode in ("jump", "gradient") else "gradient") for c in cols]
+
+
+def scene_data(colors, mode="gradient", speed=50):
+    """Build Tuya v2 (DP 25) scene data, without the leading scene number.
+
+    Each unit: switch-interval, change-time, change-mode (00 static, 01 jump,
+    02 gradient), then H(0-360) S(0-1000) V(0-1000), white bright, white temp.
+    """
+    speed = max(1, min(100, int(speed)))
+    t = int(round(lerp(100, 10, (speed - 1) / 99)))  # bigger = slower
+    out = ""
+    for rgb, m in scene_units(colors, mode):
+        h, s, v = colorsys.rgb_to_hsv(*(c / 255 for c in rgb))
+        out += "%02x%02x%02x" % (t, t, 1 if m == "jump" else 2)
+        out += "%04x%04x%04x" % (round(h * 360) % 360, round(s * 1000), max(10, round(v * 1000)))
+        out += "00000000"
+    return out
+
+
+def scene_preview(t, colors, mode="gradient", speed=50):
+    """Approximate what the bulb's native scene looks like (for the UI)."""
+    units = scene_units(colors, mode)
+    step = lerp(4.0, 0.5, (max(1, min(100, speed)) - 1) / 99)
+    pos = t / step
+    i = int(pos) % len(units)
+    c0, m = units[i]
+    if m == "jump" or len(units) == 1:
+        return c0
+    return mix(c0, units[(i + 1) % len(units)][0], smooth(pos - int(pos)))

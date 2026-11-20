@@ -30,12 +30,41 @@ class EffectTests(unittest.TestCase):
         self.assertGreater(effects.circadian_temp(13), 90)
 
 
+class SceneAndCertTests(unittest.TestCase):
+    def test_scene_data_format(self):
+        d = effects.scene_data(["#ff0000", "#0000ff"], "gradient", 50)
+        self.assertEqual(len(d), 2 * 26)          # 2 units x 13 bytes
+        self.assertEqual(d[4:6], "02")             # gradient mode
+        self.assertEqual(d[6:18], "000003e803e8")  # red = H0 S1000 V1000
+        self.assertEqual(d[26 + 6:26 + 10], "00f0")  # blue hue 240
+        self.assertEqual(effects.scene_data(["#fff"], "jump")[4:6], "01")
+        self.assertEqual(len(effects.scene_data(["#f00", "#0f0"], "breathe")), 4 * 26)
+        self.assertEqual(len(effects.scene_data(["#123456"] * 20)), 8 * 26)  # bulb max 8 units
+
+    def test_self_signed_cert_loads(self):
+        import os
+        import ssl
+        import tempfile
+        import certgen
+        cert, key = certgen.make_self_signed(ips=("127.0.0.1", "172.20.10.2"))
+        with tempfile.TemporaryDirectory() as d:
+            c, k = os.path.join(d, "c.pem"), os.path.join(d, "k.pem")
+            open(c, "w").write(cert)
+            open(k, "w").write(key)
+            ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            ctx.load_cert_chain(c, k)
+
+
 class FakeBulb:
     """Stands in for tinytuya.BulbDevice and records calls."""
     MUSIC_TRANSITION_JUMP = 0
+    MUSIC_TRANSITION_FADE = 1
 
     def __init__(self):
         self.calls = []
+
+    def bulb_has_capability(self, feature, nowait=False):
+        return True
 
     def __getattr__(self, name):
         def rec(*a, **kw):
@@ -97,6 +126,21 @@ class ApiTests(unittest.TestCase):
         st = self.req(f"/api/presets/{p['id']}/apply", {})
         self.assertEqual(st["mode"], "colour")
         self.assertEqual(st["brightness"], 60)
+
+    def test_native_scene_sent_to_bulb(self):
+        self.bulb.calls.clear()
+        st = self.req("/api/scene", {"colors": ["#ff0000", "#00ff00"], "mode": "breathe", "speed": 80})
+        self.assertEqual(st["mode"], "scene")
+        call = next(c for c in self.bulb.calls if c[0] == "set_scene")
+        self.assertEqual(call[1][0], server.SCENE_SLOT)
+        self.assertEqual(len(call[1][1]), 4 * 26)
+
+    def test_music_frames_fade_or_jump(self):
+        self.bulb.calls.clear()
+        self.req("/api/live", {"r": 255, "g": 0, "b": 0, "smooth": True})
+        self.req("/api/live", {"r": 0, "g": 0, "b": 255, "smooth": False})
+        trans = [c[1][0] for c in self.bulb.calls if c[0] == "set_music_colour"]
+        self.assertEqual(trans, [1, 0])
 
     def test_bad_input_is_400(self):
         with self.assertRaises(urllib.error.HTTPError) as cm:

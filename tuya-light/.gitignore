@@ -6,3 +6,7 @@ snapshot.json
 data.json
 *.tmp
 __pycache__/
+cert.pem
+key.pem
+cert.ip
+tinytuya-cloud.json
