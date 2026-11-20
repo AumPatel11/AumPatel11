@@ -47,6 +47,13 @@ class SceneAndCertTests(unittest.TestCase):
         self.assertEqual(effects.paint_data((0, 0, 255), [5, 3, 1]), "AAEAFAEA8APoA+iDAQMF")
         self.assertEqual(effects.paint_data((255, 0, 0)), "AAEAFAAAAAPoA+g=")  # whole strip
 
+    def test_dream_scene_matches_strip_accepted_bytes(self):
+        import base64
+        cols = [effects.rgb_to_hex(effects.hsv(h / 360)) for h in (0, 40, 80, 140, 200, 260, 310)]
+        raw = base64.b64decode(effects.dream_data(cols, "flow", 70, 100))
+        # the flowing rainbow the real strip accepted and showed
+        self.assertEqual(raw.hex(), "01000a464660000064000064002864005064008c6400c86401046401366" "4")
+
     def test_zones_stretch_and_reverse(self):
         z = desk.zones_to_segments([(1, 0, 0), (2, 0, 0)], total=4)
         self.assertEqual([c[0] for c in z], [1, 1, 2, 2])
@@ -153,6 +160,18 @@ class ApiTests(unittest.TestCase):
         self.req("/api/live", {"r": 0, "g": 0, "b": 255, "smooth": False})
         trans = [c[1][0] for c in self.bulb.calls if c[0] == "set_music_colour"]
         self.assertEqual(trans, [1, 0])
+
+    def test_rgbic_scene_goes_to_dp51(self):
+        L = server.APP.light
+        L.rgbic = True
+        try:
+            self.bulb.calls.clear()
+            self.req("/api/scene", {"colors": ["#ff0000", "#0000ff"], "mode": "flow", "speed": 60})
+            dps = [c[1][0] for c in self.bulb.calls if c[0] == "set_value"]
+            self.assertEqual(dps, [21, 51])
+            self.assertNotIn("set_scene", [c[0] for c in self.bulb.calls])
+        finally:
+            L.rgbic = False
 
     def test_bad_input_is_400(self):
         with self.assertRaises(urllib.error.HTTPError) as cm:

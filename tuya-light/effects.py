@@ -326,3 +326,22 @@ def group_segments(colours):
         q = rgb_to_hex(tuple(min(255, (int(x) >> 3 << 3) + 4) if x > 6 else 0 for x in c))
         groups.setdefault(q, []).append(i)
     return groups
+
+
+# ---- RGBIC built-in animations (DP 51 dreamlight scene, decoded from the Tuya app's writes)
+# style byte: 3 = whole strip fades colour to colour, 10 = colours flow along the strip
+# (both confirmed by eye). ponytail: jump=2 is a guess, styles 1-16 mostly unmapped.
+DREAM_STYLES = {"gradient": 3, "breathe": 3, "flow": 10, "jump": 2}
+
+
+def dream_data(colors, mode="flow", speed=50, brightness=100, flags=0x60):
+    """Base64 DP 51 custom scene: 01, scene id 00 (custom), style, speed x2,
+    flags, 00 00, brightness 1-100, then per colour hue (2 bytes) + sat (0-100)."""
+    import base64
+    speed = max(1, min(100, int(speed)))
+    raw = bytes([1, 0, DREAM_STYLES.get(mode, 10), speed, speed, flags, 0, 0,
+                 max(1, min(100, round(brightness)))])
+    for c in [c for c in colors if isinstance(c, str)][:8] or ["#ff0080"]:
+        h, s, _ = colorsys.rgb_to_hsv(*(x / 255 for x in hex_to_rgb(c)))
+        raw += (round(h * 360) % 360).to_bytes(2, "big") + bytes([round(s * 100)])
+    return base64.b64encode(raw).decode()

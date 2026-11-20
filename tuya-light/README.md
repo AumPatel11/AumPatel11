@@ -121,7 +121,9 @@ Open **http://localhost:8787**. The terminal also prints a link for your phone.
 
 On the computer, also run `pip install -r requirements-desk.txt`. The **Desk** tab then offers **Screen** (ambient light from your screen), **Music** (follows whatever the computer plays, not the mic), **Zones** (left/middle/right of the screen along an RGBIC strip), and **Both** (screen colours pulsing to the beat). Touching any other control stops it. Windows works as-is.
 
-RGBIC strips: segment colours go through DP 61 (20 segments, numbered 1-20). These strips drop writes sent faster than ~2/s, so Zones refreshes every 1.5 s. If the zones come out mirrored, set `"segments_reversed": true` (or false) in `config.json`. Segments only worked with the strip length left at the app's own setting. On a Mac, install [BlackHole](https://github.com/ExistentialAudio/BlackHole) and route output through a Multi-Output Device that includes it.
+RGBIC strips: segment colours go through DP 61 (20 segments, numbered 1-20). These strips drop writes sent faster than ~2/s, so Zones refreshes every 1.5 s. If the zones come out mirrored, set `"segments_reversed": true` (or false) in `config.json`. Segments only worked with the strip length left at the app's own setting.
+
+Flowing rainbows: Effects → Bulb scene → **Flow** stores the palette as a DP 51 scene, so the strip animates it along its segments by itself (smooth, no WiFi traffic). On a Mac, install [BlackHole](https://github.com/ExistentialAudio/BlackHole) and route output through a Multi-Output Device that includes it.
 
 ## Get your key: the bulb's Device ID and Local Key (one time, ~10 min)
 

@@ -82,6 +82,7 @@ class Light:
         self.frames = 0
         self.last_drain = 0
         self.seg_sent = None    # last colour hex per segment actually written
+        self.rgbic = False
         self.last_seg = 0.0
         self.state = {
             "on": True,
@@ -118,6 +119,8 @@ class Light:
                     raise RuntimeError(st.get("Error"))
                 self.dev = d
                 self.music_ok = self.has("music")
+                # light_length / light_pixel / lightpixel_number_set only exist on RGBIC strips
+                self.rgbic = bool({"46", "47", "53"} & set((st.get("dps") or {})))
                 self._read_device_state(st)
             except Exception as e:  # noqa: BLE001
                 self.dev = None
@@ -285,6 +288,10 @@ class Light:
             self.in_stream_mode = False
             self.seg_sent = None
             if not self.dev:
+                return
+            if self.rgbic:  # RGBIC strips animate DP 51 scenes along their segments
+                self._call(self.dev.set_value, 21, "scene")
+                self._call(self.dev.set_value, 51, effects.dream_data(colors, mode, speed, st["brightness"]))
                 return
             if not self.has("scene_data"):
                 raise ValueError("This bulb doesn't accept custom scenes - use Effects instead")
@@ -656,7 +663,7 @@ class Handler(SimpleHTTPRequestHandler):
                 cols = [c for c in (b.get("colors") or []) if isinstance(c, str)][:8]
                 if not cols:
                     raise ValueError("pick at least one colour")
-                mode = b.get("mode") if b.get("mode") in ("gradient", "jump", "breathe") else "gradient"
+                mode = b.get("mode") if b.get("mode") in ("gradient", "jump", "breathe", "flow") else "gradient"
                 L.native_scene(cols, mode, int(b.get("speed", 50)))
             elif path == "/api/sleep":
                 E.start_sleep(float(b.get("minutes", 0)))
