@@ -6,6 +6,7 @@ import unittest
 import urllib.request
 from http.server import ThreadingHTTPServer
 
+import desk
 import effects
 import server
 
@@ -150,6 +151,89 @@ class ApiTests(unittest.TestCase):
     def test_static_index(self):
         with urllib.request.urlopen(f"http://127.0.0.1:{self.port}/") as r:
             self.assertIn(b"Lumora", r.read())
+
+
+    def test_desk_mode_and_manual_takeover(self):
+        started = []
+
+        class Dummy(threading.Thread):
+            MODES = desk.DeskSync.MODES
+
+            def __init__(self, engine, mode, intensity=1.0, use_mic=False):
+                super().__init__(daemon=True)
+                self.mode, self.intensity, self.use_mic, self.running = mode, intensity, use_mic, True
+                started.append(self)
+
+            def run(self):
+                while self.running:
+                    time.sleep(0.01)
+
+            def stop(self):
+                self.running = False
+
+            def info(self):
+                return {"mode": self.mode, "intensity": self.intensity}
+
+        real, server.desk.DeskSync = server.desk.DeskSync, Dummy
+        real_miss, server.desk.missing_deps = server.desk.missing_deps, lambda *a: []
+        try:
+            st = self.req("/api/desk", {"mode": "both", "intensity": 1.5})
+            self.assertEqual(st["desk"], {"mode": "both", "intensity": 1.5})
+            st = self.req("/api/desk", {"mode": "both", "intensity": 0.5})
+            self.assertEqual(len(started), 1)  # slider move keeps the same capture
+            self.assertEqual(st["desk"]["intensity"], 0.5)
+            st = self.req("/api/colour", {"hex": "#ff0000"})
+            self.assertEqual(st["desk"], {"mode": "off"})
+            self.assertFalse(started[0].running)
+        finally:
+            server.desk.DeskSync, server.desk.missing_deps = real, real_miss
+            server.APP.stop_desk()
+
+
+@unittest.skipIf(desk.np is None, "numpy not installed")
+class DeskAnalysisTests(unittest.TestCase):
+    def test_vivid_pixels_win_over_grey(self):
+        np = desk.np
+        img = np.full((60, 100, 3), 40, np.uint8)  # dark grey scene
+        img[:10, :10] = (255, 0, 0)                 # small neon red sign
+        rgb, lum = desk.screen_colour(img)
+        self.assertGreater(rgb[0], 200)
+        self.assertLess(max(rgb[1], rgb[2]), 120)
+        self.assertLess(lum, 0.2)
+
+    def test_zones_left_to_right(self):
+        np = desk.np
+        img = np.zeros((30, 90, 3), np.uint8)
+        img[:, :30] = (255, 0, 0)
+        img[:, 30:60] = (0, 255, 0)
+        img[:, 60:] = (0, 0, 255)
+        z = desk.screen_zones(img, 3)
+        self.assertEqual([max(range(3), key=lambda i: c[i]) for c in z], [0, 1, 2])
+
+    def test_kick_drum_beats_and_pitch(self):
+        np = desk.np
+        an = desk.AudioAnalyser()
+        t = np.arange(1024) / an.rate
+        hat = 0.05 * np.sin(2 * np.pi * 6000 * t)
+        kick = 0.8 * np.sin(2 * np.pi * 60 * t) + hat
+        beats, now = 0, 0.0
+        for i in range(80):  # ~23 ms blocks, a kick every 0.5 s
+            now += 1024 / an.rate
+            an.feed(kick if i % 21 == 0 else hat, now)
+            beats += an.beat
+        self.assertGreaterEqual(beats, 3)
+        high = desk.AudioAnalyser()
+        low = desk.AudioAnalyser()
+        for _ in range(40):
+            high.feed(0.3 * np.sin(2 * np.pi * 5000 * t))
+            low.feed(0.3 * np.sin(2 * np.pi * 120 * t))
+        self.assertGreater(high.centroid, low.centroid + 0.3)
+
+    def test_silence_is_dim_not_crash(self):
+        an = desk.AudioAnalyser()
+        an.feed(desk.np.zeros(1024))
+        self.assertFalse(an.beat)
+        self.assertEqual(an.level, 0.0)
 
 
 if __name__ == "__main__":

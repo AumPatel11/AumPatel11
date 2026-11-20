@@ -82,6 +82,11 @@ function applyState(st) {
     $("#effectName").textContent = `${fx.icon} ${fx.label}`;
     $("#paletteBox").hidden = !fx.colors;
   }
+  const dk = st.desk || { mode: "off" };
+  $$("#deskMode button").forEach((b) => b.classList.toggle("on", b.dataset.v === dk.mode));
+  $("#deskInfo").textContent = dk.error ? "⚠ " + dk.error :
+    dk.mode === "off" ? $("#deskInfo").dataset.idle : `Running: ${dk.mode}${dk.audio_device ? " · listening to " + dk.audio_device : ""}`;
+  if (dk.mode !== "off") $("#modeLabel").textContent = "🖥 Desk Sync: " + dk.mode;
   const sl = st.sleep;
   $("#sleepInfo").textContent = sl ? `Fading off in ${Math.floor(sl.remaining / 60)}m ${sl.remaining % 60}s` : "";
 }
@@ -490,3 +495,15 @@ $("#cfgScan").onclick = async () => {
   applyState(await api("/api/state"));
   connectStream(); loadPresets(); loadAlarms(); loadConfig();
 })();
+
+// ---------- desk sync (runs on the computer hosting the server)
+$("#deskInfo").dataset.idle = $("#deskInfo").textContent;
+const sendDesk = (mode) => api("/api/desk", { mode, intensity: +$("#deskIntensity").value / 100, mic: $("#deskMic").checked })
+  .then(applyState).catch((e) => toast(e.message));
+const throttledDesk = throttle(() => sendDesk(S.desk.mode), 200);
+$$("#deskMode button").forEach((b) => b.addEventListener("click", () => sendDesk(b.dataset.v)));
+$("#deskIntensity").addEventListener("input", (e) => {
+  $("#deskIntensityOut").textContent = (e.target.value / 100).toFixed(1) + "×";
+  if ((S.desk || {}).mode !== "off") throttledDesk();
+});
+$("#deskMic").addEventListener("change", () => { if ((S.desk || {}).mode !== "off") sendDesk(S.desk.mode); });

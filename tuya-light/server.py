@@ -26,6 +26,7 @@ if ROOT not in sys.path:
 if os.path.isdir(os.path.join(ROOT, "vendor")):
     sys.path.append(os.path.join(ROOT, "vendor"))
 
+import desk  # noqa: E402
 import effects  # noqa: E402
 
 try:
@@ -439,6 +440,35 @@ class App:
         self.light.connect(self.config.get("device"))
         self.engine = Engine(self.light, self.data, self.config.get("fps", 12))
         self.engine.start()
+        self.desk = None
+        self.desk_lock = threading.Lock()
+
+    def start_desk(self, mode, intensity=1.0, mic=False):
+        if mode not in desk.DeskSync.MODES:
+            raise ValueError("mode must be off, screen, music or both")
+        miss = desk.missing_deps(mode != "music", mode != "screen")
+        if miss:
+            raise ValueError("Desk Sync needs: pip install -r requirements-desk.txt (missing "
+                             + ", ".join(miss) + ")")
+        intensity = clamp(float(intensity), 0.2, 2.0)
+        with self.desk_lock:
+            d = self.desk
+            if d and d.running and d.mode == mode and d.use_mic == bool(mic):
+                d.intensity = intensity  # just a slider move: keep the capture threads
+                return
+            self._stop_desk()
+            self.desk = desk.DeskSync(self.engine, mode, intensity=intensity, use_mic=bool(mic))
+            self.desk.start()
+
+    def _stop_desk(self):
+        if self.desk:
+            self.desk.stop()
+            self.desk.join(0.5)  # so its last frame can't land after a manual colour
+            self.desk = None
+
+    def stop_desk(self):
+        with self.desk_lock:
+            self._stop_desk()
 
     def save_data(self):
         save_json(DATA_PATH, self.data)
@@ -446,10 +476,14 @@ class App:
     def state(self):
         s = self.light.snapshot()
         s["sleep"] = self.engine.sleep_info()
+        d = self.desk
+        s["desk"] = d.info() if d else {"mode": "off"}
         return s
 
 
 APP = None
+MANUAL_PATHS = {"/api/power", "/api/colour", "/api/white", "/api/brightness",
+                "/api/effect", "/api/live", "/api/scene"}
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -533,8 +567,15 @@ class Handler(SimpleHTTPRequestHandler):
         except ValueError:
             return self.send_json({"error": "bad json"}, 400)
         L, E = APP.light, APP.engine
+        if path in MANUAL_PATHS or path.startswith("/api/presets/"):
+            APP.stop_desk()  # touching the light by hand takes over from Desk Sync
         try:
-            if path == "/api/power":
+            if path == "/api/desk":
+                if b.get("mode", "off") == "off":
+                    APP.stop_desk()
+                else:
+                    APP.start_desk(b["mode"], b.get("intensity", 1.0), b.get("mic", False))
+            elif path == "/api/power":
                 L.power(b.get("on", not L.state["on"]))
             elif path == "/api/colour":
                 if "hex" in b:

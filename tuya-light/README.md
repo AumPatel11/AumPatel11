@@ -117,6 +117,10 @@ python server.py
 
 Open **http://localhost:8787**. The terminal also prints a link for your phone.
 
+### 🖥 Desk Sync (screen + system audio)
+
+On the computer, also run `pip install -r requirements-desk.txt`. The **Desk** tab then offers **Screen** (ambient light from your screen), **Music** (follows whatever the computer plays, not the mic), and **Both** (screen colours pulsing to the beat). Touching any other control stops it. Windows works as-is. On a Mac, install [BlackHole](https://github.com/ExistentialAudio/BlackHole) and route output through a Multi-Output Device that includes it.
+
 ## Get your key: the bulb's Device ID and Local Key (one time, ~10 min)
 
 Tuya bulbs encrypt local traffic with a per-device **Local Key**, so you need to get it once.

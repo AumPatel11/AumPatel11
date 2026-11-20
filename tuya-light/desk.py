@@ -12,8 +12,10 @@ Optional extras (only on the computer):  pip install -r requirements-desk.txt
 """
 import colorsys
 import math
+import sys
 import threading
 import time
+import warnings
 
 try:
     import numpy as np
@@ -145,7 +147,13 @@ class AudioSource(threading.Thread):
 
     def run(self):
         try:
+            if sys.platform == "win32":
+                # soundcard only sets up COM on the thread that imported it
+                import ctypes
+                ctypes.windll.ole32.CoInitializeEx(None, 0)
             import soundcard as sc
+            # Windows loopback reports harmless gaps whenever nothing is playing
+            warnings.filterwarnings("ignore", message="data discontinuity")
             if self.use_mic:
                 mic = sc.default_microphone()
             else:
@@ -175,6 +183,7 @@ class DeskSync(threading.Thread):
         self.intensity = intensity
         self.running = True
         self.screen = ScreenSource(fps=max(fps, 15)) if mode in ("screen", "both") else None
+        self.use_mic = use_mic
         self.audio = AudioSource(use_mic) if mode in ("music", "both") else None
         self.hue = 0.0
         self.out = (0.0, 0.0, 0.0)
@@ -200,7 +209,7 @@ class DeskSync(threading.Thread):
         k = self.intensity
         if self.mode == "screen":
             rgb, lum = self.screen.rgb, self.screen.lum
-            level = 0.25 + 0.75 * min(1.0, lum * 1.8)  # dark scenes dim the desk
+            level = min(1.0, (0.25 + 0.75 * min(1.0, lum * 1.8)) * k)  # dark scenes dim the desk
             return tuple(c * level for c in rgb), True
         an = self.audio.an
         if self.mode == "music":
