@@ -19,8 +19,9 @@ import socket
 import sys
 import time
 
-import server  # reuses Lumora's bulb code, config and vendored libraries
-import effects
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import server  # noqa: E402  (reuses Lumora's bulb code, config and libraries)
+import effects  # noqa: E402
 
 CONFIG = server.CONFIG_PATH
 
