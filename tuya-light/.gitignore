@@ -1,0 +1,8 @@
+# contain your bulb's local key - never commit
+config.json
+devices.json
+tuya-raw.json
+snapshot.json
+data.json
+*.tmp
+__pycache__/

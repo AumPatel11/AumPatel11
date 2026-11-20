@@ -1,0 +1,10 @@
+{
+  "device": {
+    "id": "YOUR_DEVICE_ID",
+    "key": "YOUR_LOCAL_KEY",
+    "ip": "",
+    "version": "3.3"
+  },
+  "fps": 12,
+  "port": 8787
+}

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0b12">
+<title>Lumora</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="ambient"></div>
+
+<header class="top">
+  <div class="brand"><span class="logo"></span>Lumora</div>
+  <span id="status" class="pill">…</span>
+</header>
+
+<main>
+  <section class="hero">
+    <button id="bulb" class="bulb" aria-label="Toggle power">
+      <span class="bulb-core"></span>
+    </button>
+    <div class="hero-info">
+      <div id="modeLabel" class="mode-label">—</div>
+      <div class="row gap">
+        <button id="powerBtn" class="chip">Power</button>
+        <button id="savePreset" class="chip">＋ Save preset</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="presets" class="presets"></div>
+
+  <label class="slider-row master">
+    <span>☀</span>
+    <input id="brightness" type="range" min="1" max="100" value="80" aria-label="Brightness">
+    <output id="brightnessOut">80%</output>
+  </label>
+
+  <!-- COLOUR -->
+  <section class="panel" data-tab="colour">
+    <div class="wheel-wrap">
+      <canvas id="wheel" width="560" height="560" aria-label="Colour wheel"></canvas>
+      <div id="wheelKnob" class="knob"></div>
+    </div>
+    <div class="row gap wrap center" id="swatches"></div>
+    <div class="row gap center">
+      <input id="hexInput" class="input mono" maxlength="7" value="#ff3cac" aria-label="Hex colour">
+      <input id="nativeColour" type="color" value="#ff3cac" aria-label="Pick colour">
+    </div>
+    <h3>Colour harmony</h3>
+    <p class="hint">Tap a harmony to send it as a living gradient.</p>
+    <div id="harmonies" class="harmonies"></div>
+  </section>
+
+  <!-- WHITE -->
+  <section class="panel" data-tab="white" hidden>
+    <label class="field">Warm ↔ Cool
+      <input id="temp" class="temp-slider" type="range" min="0" max="100" value="40">
+    </label>
+    <div class="grid4" id="whitePresets"></div>
+    <label class="toggle">
+      <input id="circadian" type="checkbox">
+      <span>Circadian mode — follows the sun: warm at night, crisp at midday</span>
+    </label>
+  </section>
+
+  <!-- EFFECTS -->
+  <section class="panel" data-tab="effects" hidden>
+    <div id="effectGrid" class="effect-grid"></div>
+    <div id="effectControls" class="card" hidden>
+      <div class="row between"><b id="effectName">Effect</b><button id="effectStop" class="chip">Stop</button></div>
+      <label class="slider-row"><span>Speed</span>
+        <input id="speed" type="range" min="10" max="400" value="100"><output id="speedOut">1.0×</output></label>
+      <div id="paletteBox">
+        <div class="row between"><span>Your palette</span><button id="addColour" class="chip">＋ colour</button></div>
+        <div id="paletteEditor" class="palette-editor"></div>
+        <div id="paletteIdeas" class="row gap wrap"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MUSIC -->
+  <section class="panel" data-tab="music" hidden>
+    <canvas id="viz" width="600" height="160"></canvas>
+    <div class="seg" id="musicStyle">
+      <button data-v="spectrum" class="on">Spectrum</button>
+      <button data-v="pulse">Pulse</button>
+      <button data-v="beat">Beat drop</button>
+    </div>
+    <label class="slider-row"><span>Gain</span><input id="gain" type="range" min="20" max="400" value="140"><output id="gainOut">1.4×</output></label>
+    <button id="micBtn" class="btn big">🎤 Start music sync</button>
+    <p class="hint" id="micHint">Uses your microphone to react to whatever is playing in the room. On a phone, the mic only works over https or on the computer running Lumora (localhost).</p>
+  </section>
+
+  <!-- PHOTO -->
+  <section class="panel" data-tab="photo" hidden>
+    <p class="hint">Pick a photo — Lumora pulls out its mood palette. Tap anywhere on the photo to grab that exact colour.</p>
+    <label class="btn big file">🖼 Choose photo<input id="photoInput" type="file" accept="image/*" hidden></label>
+    <canvas id="photoCanvas" hidden></canvas>
+    <div id="photoPalette" class="row gap wrap center"></div>
+    <button id="photoPlay" class="btn" hidden>▶ Play photo mood</button>
+  </section>
+
+  <!-- TIMER -->
+  <section class="panel" data-tab="timer" hidden>
+    <h3>Sleep fade</h3>
+    <p class="hint">Slowly dims, then switches off.</p>
+    <div class="row gap wrap" id="sleepBtns"></div>
+    <div id="sleepInfo" class="hint"></div>
+    <h3>Sunrise wake-up</h3>
+    <p class="hint">The light rises from deep red to bright warm white, finishing at your alarm time. Keep Lumora running.</p>
+    <div class="card">
+      <div class="row gap wrap">
+        <input id="alarmTime" type="time" class="input" value="07:00">
+        <select id="alarmDur" class="input">
+          <option value="10">10 min rise</option><option value="15" selected>15 min rise</option>
+          <option value="30">30 min rise</option>
+        </select>
+      </div>
+      <div class="days" id="alarmDays"></div>
+      <button id="alarmAdd" class="btn">Add alarm</button>
+    </div>
+    <div id="alarmList"></div>
+  </section>
+
+  <!-- SETUP -->
+  <section class="panel" data-tab="setup" hidden>
+    <div class="card">
+      <h3>Your bulb</h3>
+      <p class="hint">Needs the bulb's <b>Device ID</b> and <b>Local Key</b>. See the README for the 5-minute way to get them.</p>
+      <div id="wizardList"></div>
+      <label class="field">Device ID<input id="cfgId" class="input mono" autocomplete="off"></label>
+      <label class="field">Local Key<input id="cfgKey" class="input mono" autocomplete="off"></label>
+      <label class="field">IP address (blank = auto-find)<input id="cfgIp" class="input mono" placeholder="192.168.1.50"></label>
+      <label class="field">Protocol version
+        <select id="cfgVer" class="input"><option>3.3</option><option>3.4</option><option>3.5</option><option>3.1</option></select></label>
+      <label class="slider-row"><span>Effect FPS</span><input id="cfgFps" type="range" min="2" max="25" value="12"><output id="fpsOut">12</output></label>
+      <div class="row gap wrap">
+        <button id="cfgSave" class="btn">Connect</button>
+        <button id="cfgScan" class="btn ghost">Scan WiFi</button>
+        <button id="cfgForget" class="btn ghost">Forget bulb</button>
+      </div>
+      <div id="cfgMsg" class="hint"></div>
+      <div id="scanList"></div>
+    </div>
+    <p class="hint" id="lanHint"></p>
+  </section>
+</main>
+
+<nav class="tabs" id="tabs">
+  <button data-tab="colour" class="on"><i>🎨</i>Colour</button>
+  <button data-tab="white"><i>💡</i>White</button>
+  <button data-tab="effects"><i>✨</i>Effects</button>
+  <button data-tab="music"><i>🎵</i>Music</button>
+  <button data-tab="photo"><i>🖼</i>Photo</button>
+  <button data-tab="timer"><i>⏰</i>Timer</button>
+  <button data-tab="setup"><i>⚙️</i>Setup</button>
+</nav>
+
+<div id="toast" class="toast" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>
